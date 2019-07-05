@@ -33,7 +33,7 @@ async function main() {
             rl.close();
         });
 
-        // Prompt for affiliation input (e.g. peer0.dma.dk / peer0.veeteedeeamet.ee)
+        // Prompt for affiliation input (e.g. peer0.dma.dk / peer0.'veeteedeeamet.ee')
         rl.question('Please input the affiliation (country name): ', (answer) => {
             affiliation = answer;
             console.log(`The affiliation with ${username} is ${affiliation}`);
