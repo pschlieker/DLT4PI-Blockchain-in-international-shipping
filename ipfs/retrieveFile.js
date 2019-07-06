@@ -2,6 +2,7 @@
 const ipfsAPI = require('ipfs-api');
 const readline = require('readline');
 const fs = require('fs');
+const crypto = require('./crypto.js');
 
 let CID;
 const rl = readline.createInterface({
@@ -17,15 +18,24 @@ async function main() {
         //Prompt for filename
         rl.question('Please enter the hash of the file to be downloaded: ', (answer) => {
             CID = answer;
-            console.log(`The file "${CID}" will be downloaded from IPFS.`);
-            rl.close();
+            
+            //Prompt for password
+            rl.question('Please enter the password of the file to be downloaded: ', (password) => {
+                console.log(`The file "${CID}" will be downloaded from IPFS.`);
+                rl.close();
 
-            ipfs.files.get(CID, function (err, files) {
-                files.forEach((file) => {
-                  console.log(file.path)
-                  console.log(file.content.toString('utf8'))
-                })
-            })
+                //Retrieve file
+                ipfs.files.get(CID, function (err, files) {
+                    files.forEach((file) => {
+                    
+                    //Decrypt file
+                    let content = crypto.decryptBuffer(file.content, password);
+
+                    //Output result
+                    console.log(content.toString('utf8'))
+                    })
+                });
+            });
         });         
         
     } catch (error) {
