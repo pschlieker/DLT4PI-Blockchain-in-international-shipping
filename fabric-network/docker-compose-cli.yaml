@@ -1,0 +1,93 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  orderer.emsa.europa.eu:
+  peer0.dma.dk:
+  peer1.dma.dk:
+  peer0.veeteedeamet.ee:
+  peer1.veeteedeamet.ee:
+
+networks:
+  byfn:
+
+services:
+
+  orderer.emsa.europa.eu:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.emsa.europa.eu
+    container_name: orderer.emsa.europa.eu
+    networks:
+      - byfn
+
+  peer0.dma.dk:
+    container_name: peer0.dma.dk
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.dma.dk
+    networks:
+      - byfn
+
+  peer1.dma.dk:
+    container_name: peer1.dma.dk
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.dma.dk
+    networks:
+      - byfn
+
+  peer0.veeteedeamet.ee:
+    container_name: peer0.veeteedeamet.ee
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.veeteedeamet.ee
+    networks:
+      - byfn
+
+  peer1.veeteedeamet.ee:
+    container_name: peer1.veeteedeamet.ee
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.veeteedeamet.ee
+    networks:
+      - byfn
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      #- FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.dma.dk:7051
+      - CORE_PEER_LOCALMSPID=DMA-MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/users/Admin@dma.dk/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./../chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.emsa.europa.eu
+      - peer0.dma.dk
+      - peer1.dma.dk
+      - peer0.veeteedeamet.ee
+      - peer1.veeteedeamet.ee
+    networks:
+      - byfn

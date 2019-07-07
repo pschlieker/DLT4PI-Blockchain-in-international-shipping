@@ -1,0 +1,97 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  peer0.sjofartsverket.se:
+  peer1.sjofartsverket.se:
+
+networks:
+  byfn:
+
+services:
+
+  peer0.sjofartsverket.se:
+    container_name: peer0.sjofartsverket.se
+    extends:
+      file: base/peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.sjofartsverket.se
+      - CORE_PEER_ADDRESS=peer0.sjofartsverket.se:11051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.sjofartsverket.se:11052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.sjofartsverket.se:12051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.sjofartsverket.se:11051
+      - CORE_PEER_LOCALMSPID=Org3MSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./org3-artifacts/crypto-config/peerOrganizations/sjofartsverket.se/peers/peer0.sjofartsverket.se/msp:/etc/hyperledger/fabric/msp
+        - ./org3-artifacts/crypto-config/peerOrganizations/sjofartsverket.se/peers/peer0.sjofartsverket.se/tls:/etc/hyperledger/fabric/tls
+        - peer0.sjofartsverket.se:/var/hyperledger/production
+    ports:
+      - 11051:11051
+    networks:
+      - byfn
+
+  peer1.sjofartsverket.se:
+    container_name: peer1.sjofartsverket.se
+    extends:
+      file: base/peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.sjofartsverket.se
+      - CORE_PEER_ADDRESS=peer1.sjofartsverket.se:12051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:12051
+      - CORE_PEER_CHAINCODEADDRESS=peer1.sjofartsverket.se:12052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.sjofartsverket.se:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.sjofartsverket.se:12051
+      - CORE_PEER_LOCALMSPID=Org3MSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./org3-artifacts/crypto-config/peerOrganizations/sjofartsverket.se/peers/peer1.sjofartsverket.se/msp:/etc/hyperledger/fabric/msp
+        - ./org3-artifacts/crypto-config/peerOrganizations/sjofartsverket.se/peers/peer1.sjofartsverket.se/tls:/etc/hyperledger/fabric/tls
+        - peer1.sjofartsverket.se:/var/hyperledger/production
+    ports:
+      - 12051:12051
+    networks:
+      - byfn
+
+
+  Org3cli:
+    container_name: Org3cli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=INFO
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=Org3cli
+      - CORE_PEER_ADDRESS=peer0.sjofartsverket.se:11051
+      - CORE_PEER_LOCALMSPID=Org3MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/sjofartsverket.se/peers/peer0.sjofartsverket.se/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/sjofartsverket.se/peers/peer0.sjofartsverket.se/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/sjofartsverket.se/peers/peer0.sjofartsverket.se/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/sjofartsverket.se/users/Admin@sjofartsverket.se/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./../chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./org3-artifacts/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ./crypto-config/peerOrganizations/dma.dk:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk
+        - ./crypto-config/peerOrganizations/veeteedeamet.ee:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/veeteedeamet.ee
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+    depends_on:
+      - peer0.sjofartsverket.se
+      - peer1.sjofartsverket.se
+    networks:
+      - byfn
