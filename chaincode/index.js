@@ -4,7 +4,7 @@
 
 'use strict';
 
-const FabCar = require('./lib/fabcar');
+const Shipping = require('./lib/shipping');
 
-module.exports.FabCar = FabCar;
-module.exports.contracts = [ FabCar ];
+module.exports.Shipping = Shipping;
+module.exports.contracts = [ Shipping ];
