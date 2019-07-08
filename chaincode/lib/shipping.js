@@ -9,7 +9,7 @@ class MaritimeAuthority {
     constructor(objType, name, country, domain, pubKey, privKey) {
         this.objType = objType; // "MA" - used to distinguish  various types of objects in state database
         this.name = name;
-        this.country = country;
+        this.country = country; // country is the key
         this.domain = domain;
         this.pubKey = pubKey;
         this.privKey = privKey;
@@ -31,7 +31,7 @@ class MaritimeAuthority {
 class Ship {
     constructor(objType, imo, name, shipType, flag, homePort, tonnage, owner) {
         this.objType = objType; // "ship" - used to distinguish  various types of objects in state database
-        this.imo = imo;
+        this.imo = imo; // imo is the key
         this.name = name;
         this.shipType = shipType;
         this.flag = flag;
@@ -58,23 +58,20 @@ class Ship {
 // Private Data Collections must be be defined statically
 // Reference: https://medium.com/@spsingh559/deep-dive-into-private-data-in-hyperledger-fabric-cf23931e8f96
 
-// In this apporach, all certificates are stored with Private Data Collection
-// The endorsement policy of the PDC will be 3 organizations (Denmark, Estonia, Germany)
-// so all 3 organizations will have access to each others' ship certificates
-// BUT there will be an attribute storing MSPid, indicating who could read the certificates
-// (e.g. Denmark peer creates Denmark ship, that ship certificate contains only DenmarkMSP)
+// In this apporach, each Maritime Authority will have its own PrivateShipCertificates PDC
+// At first, they could only be accessed by themselves (defined in the "collections_config.json")
+// If location consensus is reached, the chaincode function will trigger a chaincode upgrade
+// to update the endorsement policy of the corresponding PrivateShipCertificates PDC
 class PrivateShipCertificate {
     constructor(objType, certName, certNum, imo, issueDate, expiryDate, accessList) {
         this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
         this.certName = certName;
         this.certNum = certNum;
-        this.imo = imo;
+        this.imo = imo; // imo is the key
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
-        this.accessList = accessList;
     }
 }
-
 
 let Chaincode = class {
     
@@ -107,7 +104,7 @@ let Chaincode = class {
             return shim.error(err);
         }
     }
-    
+
     // === only Maritime Authority peers could access this method ===
     async accessCtrlOnlyMA(stub) {
         let cid = new ClientIdentity(stub);
@@ -117,12 +114,12 @@ let Chaincode = class {
             return true;
         case 'EstoniaMSP':
             return true;
-        case 'GermanyMSP':
-            return true;
+        // case 'GermanyMSP':
+        //     return true;
         default:
             throw new Error('Wrong MSP');
         }
-    };
+    }
 
     // ===========================================================================
     // initLedger - create 3 Marititme Authorities (Denmark, Estonia and Germany), 
@@ -134,14 +131,12 @@ let Chaincode = class {
         const denmarkKey = denmark.generateKeys('base64');
         const estonia = crypto.createDiffieHellman(2048);
         const estoniaKey = estonia.generateKeys('base64');
-        const germany = crypto.createDiffieHellman(2048);
-        const germanyKey = germany.generateKeys('base64');
 
         // === Create MaritimeAuthorities object ===
         let maritimeAuthorities = [
             new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkKey.getPublicKey('base64'), denmarkKey.getPrivateKey('base64')),
             new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaKey.getPublicKey('base64'), estoniaKey.getPrivateKey('base64')),
-            new MaritimeAuthority('MA', 'Deutsche Flagge', 'Germany', 'deutsche-flagge.de', germanyKey.getPubKey('base64'), germany.getPrivateKey('base64'))
+            // new MaritimeAuthority('MA', 'Deutsche Flagge', 'Germany', 'deutsche-flagge.de', germanyKey.getPubKey('base64'), germany.getPrivateKey('base64'))
         ];
         let denmarkShips = [
             new Ship('ship', '9166778', 'AOTEA MAERSK', 'Container Ship', 'Denmark', 'Port of Copenhagen', 92198, 'Alice'),
@@ -151,27 +146,70 @@ let Chaincode = class {
             new Ship('ship', '9148843', 'CRYSTALWATER', 'Oil Products Tanker', 'Estonia', 'Muuga Harbour', 1655, 'Charile'),
             new Ship('ship', '9762687', 'TIIU', 'Passenger/Ro-Ro Cargo Ship', 'Estonia', 'Tallinn Passenger Port', 4987, 'David')
         ];
-        let germanyShips = [
-            new Ship('ship', '9501368', 'SHANGHAI EXPRESS', 'Container Ship', 'Germany', 'Port of Hamburg', 142295, 'Emma'),
-            new Ship('ship', '9327578', 'BENEDIKT RAMBOW', 'Container Ship', 'Germany', 'Port of Nordenham', 9957, 'Flora')
-        ];
         maritimeAuthorities[0].addShips(denmarkShips);
         maritimeAuthorities[1].addShips(estoniaShips);
-        maritimeAuthorities[2].addShips(germanyShips);
-
-        // === Create PrivateShipCertificates object, save to state ===
-        let PrivateShipCertificates = [
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), 'DenmarkMSP'),
-        ];
-        // await stub.PutPrivateData('collectionShipCertificates', )
-
 
         // === Save MaritimeAuthorities to state ===
         for (let i = 0; i < maritimeAuthorities.length; i++) {
             await stub.putState(maritimeAuthorities[i].country.toUpperCase(), Buffer.from(JSON.stringify(maritimeAuthorities[i])));
-            console.info('Added <--> ', maritimeAuthorities[i]);
+            console.info('Added <--> ' + maritimeAuthorities[i]);
         }
+
+        // === Create PrivateShipCertificates private data collections, save to state ===
+        let PrivateDenmarkShipCertificates = [
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1)),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2)),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2))
+        ]
+        let PrivateEstoniaShipCertificates = [
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3)),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9148843', new Date(2019, 3, 3), new Date(2021, 3, 3)),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9762687', new Date(2018, 4, 4), new Date(2020, 4, 4)),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4))
+        ]
+
+        // === Save PrivateDenmarkShipCertificates to state ===
+        for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
+            let imo = i.imo;
+            certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
+            await stub.PutPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
+            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        }
+
+        // === Save PrivateEstoniaShipCertificates to state ===
+        for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
+            let imo = i.imo;
+            certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
+            await stub.PutPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
+            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        }
+
         console.info('============= END : Initialize Ledger ===========');
+    }
+
+    // =======================================
+    // readPrivateShipCertificate - read ship certificates
+    // =======================================
+    async readPrivateShipCertificate(stub, args) {
+        // e.g. '{"Args":["readPrivateShipCertificate", "5671234"]}'
+        console.info('============= START : Reading Ship Certificates ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) ex: 1234567');
+        }
+
+        let imo = args[0];
+
+        // === Get the flag of the ship from chaincode state ===
+        let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
+        if (!ship || ship.length <= 1) {
+            throw new Error('Error occured retrieving the ship');
+        }
+        let country = ship.flag;
+
+        // === Get the ship certificate from chaincode state ===
+        let certs = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        return certs;
     }
 
     // =======================================
@@ -184,14 +222,14 @@ let Chaincode = class {
             if (args.length !== 7) {
                 throw new Error('Incorrect number of arguments. Expecting 7');
             }
-    
+
             // === Create ship object, get MA from the flag, add the newly created ship to shipList, save to state ===
             let ship = new Ship('ship', args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
             // TODO: check if the ship is created with the correct country (only "Denmark", "Estonia", "Germany")
             let maAsBytes = await stub.getState(ship.country.toUpperCase());
             let ma = JSON.parse(maAsBytes);
             ma.addShips([ship]);
-    
+
             await stub.putState(ma.country.toUpperCase(), Buffer.from(JSON.stringify(ma)));
             console.log(`Ship ${args[1]} created with ${ma.country}`);
         }
@@ -201,8 +239,8 @@ let Chaincode = class {
     async queryShip(stub, args) {
         // e.g. '{"Args":["queryShip", "5671234"]}'
         console.info('============= START : Query Ship ===========');
-        if (args.length !== 2) {
-            throw new Error('Incorrect number of arguments. Expecting 1 ex: 1234567');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) ex: 1234567');
         }
 
         // === Query ship object ===
