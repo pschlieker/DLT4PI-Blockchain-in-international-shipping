@@ -172,7 +172,7 @@ let Chaincode = class {
         // === Save PrivateDenmarkShipCertificates to state ===
         for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
             let imo = i.imo;
-            certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
+            let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
             await stub.PutPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
         }
@@ -180,7 +180,7 @@ let Chaincode = class {
         // === Save PrivateEstoniaShipCertificates to state ===
         for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
             let imo = i.imo;
-            certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
+            let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
             await stub.PutPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
         }
@@ -188,9 +188,9 @@ let Chaincode = class {
         console.info('============= END : Initialize Ledger ===========');
     }
 
-    // =======================================
-    // readPrivateShipCertificate - read ship certificates
-    // =======================================
+    // ==========================================================================
+    // readPrivateShipCertificate - return certs in Bytes
+    // ==========================================================================
     async readPrivateShipCertificate(stub, args) {
         // e.g. '{"Args":["readPrivateShipCertificate", "5671234"]}'
         console.info('============= START : Reading Ship Certificates ===========');
@@ -212,9 +212,9 @@ let Chaincode = class {
         return certs;
     }
 
-    // =======================================
+    // ==========================================================================
     // createShip - create a ship to the state
-    // =======================================
+    // ==========================================================================
     async createShip(stub, args) {
         // e.g. '{"Args":["createShip", "5671234", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}'
         console.info('============= START : Create Ship ===========');
@@ -236,11 +236,14 @@ let Chaincode = class {
         console.info('============= END : Create Ship ===========');
     }
 
+    // ==========================================================================
+    // queryShip - return the queried ship by country from the state
+    // ==========================================================================
     async queryShip(stub, args) {
         // e.g. '{"Args":["queryShip", "5671234"]}'
         console.info('============= START : Query Ship ===========');
         if (args.length !== 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) ex: 1234567');
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) eg: 1234567');
         }
 
         // === Query ship object ===
@@ -252,18 +255,48 @@ let Chaincode = class {
         }
         console.log(shipAsBytes.toString());
         return shipAsBytes;
+    }    
+
+    // ==========================================================================
+    // queryAllShipsByCountry - return an array of ships on the blockchain
+    // ==========================================================================
+    async queryAllShipsByCountry(stub, args) {
+        // e.g. '{"Args":["queryAllShipsByCountry", "Denmark"]}'
+        console.info('============= START : Query All Ships by Country ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (country) eg: Denmark');
+        }
+        let country = args[0].charAt(0).toUpperCase() + args[0].slice(1);
+        let maAsBytes = await stub.getState(country);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist.');
+        }
+        console.log(maAsBytes.toString());
+        let result = JSON.parse(maAsBytes).getShipList();
+        if (!result || result.toString().length <= 0) {
+            throw new Error(`ShipList of ${country} does not exist.`);
+        }
+        return result;
     }
 
+    // ==========================================================================
+    // verifyLocation - verify the ship location by calling external api (oracle)
+    // ==========================================================================
     async verifyLocation(stub, args) {
         // e.g. '{"Args":["verifyLocation", "5671234"]}'
     }
 
-    async queryShipCertificate(stub, args) {
+
+    // ==========================================================================
+    // requestShipCert - query ship certificate by Maritime Authority
+    // ==========================================================================
+    async requestShipCert(stub, args) {
         // e.g. '{"Args":["queryShipCertificate", "5671234"]}'
         // 1. requesting authority execute this function
         // 2. verify location with oracle (external api dummy)
-        // 3. 
+        // 3. grant access for the requesting authority to access the private certificate
     }
+
 };
 
 
