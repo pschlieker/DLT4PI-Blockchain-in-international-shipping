@@ -40,6 +40,7 @@ echo "Channel name : "$CHANNEL_NAME
 createChannel() {
 	setGlobals 0 1
 
+  echo "Trying to create Channel '$CHANNEL_NAME'."
 	if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
                 set -x
 		peer channel create -o orderer.emsa.europa.eu:7050 -c $CHANNEL_NAME -f ./channel-artifacts/channel.tx >&log.txt
@@ -52,7 +53,7 @@ createChannel() {
 				set +x
 	fi
 	cat log.txt
-	verifyResult $res "Channel creation failed"
+	verifyResult $res "Failed to create Channel '$CHANNEL_NAME'"
 	echo "===================== Channel '$CHANNEL_NAME' created ===================== "
 	echo
 }

@@ -461,28 +461,28 @@ function generateChannelArtifacts() {
 
   echo
   echo "#################################################################"
-  echo "#######    Generating anchor peer update for DMA-MSP   ##########"
+  echo "#######    Generating anchor peer update for DmaMSP   ##########"
   echo "#################################################################"
   set -x
-  configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/DMA-MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Danish-Maritime-Authority
+  configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/DmaMSPanchors.tx -channelID $CHANNEL_NAME -asOrg DanishMaritimeAuthority
   res=$?
   set +x
   if [ $res -ne 0 ]; then
-    echo "Failed to generate anchor peer update for DMA-MSP..."
+    echo "Failed to generate anchor peer update for DmaMSP..."
     exit 1
   fi
 
   echo
   echo "#################################################################"
-  echo "#######    Generating anchor peer update for VTA-MSP   ##########"
+  echo "#######    Generating anchor peer update for VtaMSP   ##########"
   echo "#################################################################"
   set -x
   configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate \
-    ./channel-artifacts/VTA-MSPanchors.tx -channelID $CHANNEL_NAME -asOrg Estonian-Maritime-Authority
+    ./channel-artifacts/VtaMSPanchors.tx -channelID $CHANNEL_NAME -asOrg EstonianMaritimeAuthority
   res=$?
   set +x
   if [ $res -ne 0 ]; then
-    echo "Failed to generate anchor peer update for VTA-MSP..."
+    echo "Failed to generate anchor peer update for VtaMSP..."
     exit 1
   fi
   echo

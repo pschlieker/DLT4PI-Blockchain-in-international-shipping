@@ -33,7 +33,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.dma.dk:8051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.dma.dk:7051
-      - CORE_PEER_LOCALMSPID=DMA-MSP
+      - CORE_PEER_LOCALMSPID=DmaMSP
     volumes:
         - /var/run/:/host/var/run/
         - ../crypto-config/peerOrganizations/dma.dk/peers/peer0.dma.dk/msp:/etc/hyperledger/fabric/msp
@@ -55,7 +55,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.dma.dk:8051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.dma.dk:7051
-      - CORE_PEER_LOCALMSPID=DMA-MSP
+      - CORE_PEER_LOCALMSPID=DmaMSP
     volumes:
         - /var/run/:/host/var/run/
         - ../crypto-config/peerOrganizations/dma.dk/peers/peer1.dma.dk/msp:/etc/hyperledger/fabric/msp
@@ -78,7 +78,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.veeteedeamet.ee:9051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.veeteedeamet.ee:10051
-      - CORE_PEER_LOCALMSPID=VTA-MSP
+      - CORE_PEER_LOCALMSPID=VtaMSP
     volumes:
         - /var/run/:/host/var/run/
         - ../crypto-config/peerOrganizations/veeteedeamet.ee/peers/peer0.veeteedeamet.ee/msp:/etc/hyperledger/fabric/msp
@@ -100,7 +100,7 @@ services:
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.veeteedeamet.ee:10051
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.veeteedeamet.ee:9051
-      - CORE_PEER_LOCALMSPID=VTA-MSP
+      - CORE_PEER_LOCALMSPID=VtaMSP
     volumes:
         - /var/run/:/host/var/run/
         - ../crypto-config/peerOrganizations/veeteedeamet.ee/peers/peer1.veeteedeamet.ee/msp:/etc/hyperledger/fabric/msp

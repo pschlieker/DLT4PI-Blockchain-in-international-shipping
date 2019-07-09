@@ -19,10 +19,10 @@ Organizations:
     - &OrdererOrg
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: European-Maritime-Safety-Agency
+        Name: EuropeanMaritimeSafetyAgency
 
         # ID to load the MSP definition as
-        ID: EMSA-MSP
+        ID: EmsaMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
         MSPDir: crypto-config/ordererOrganizations/emsa.europa.eu/msp
@@ -33,21 +33,21 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('EMSA-MSP.member')"
+                Rule: "OR('EmsaMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('EMSA-MSP.member')"
+                Rule: "OR('EmsaMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('EMSA-MSP.admin')"
+                Rule: "OR('EmsaMSP.admin')"
 
     - &Org1
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: Danish-Maritime-Authority
+        Name: DanishMaritimeAuthority
 
         # ID to load the MSP definition as
-        ID: DMA-MSP
+        ID: DmaMSP
 
         MSPDir: crypto-config/peerOrganizations/dma.dk/msp
 
@@ -57,13 +57,13 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('DMA-MSP.admin', 'DMA-MSP.peer', 'DMA-MSP.client')"
+                Rule: "OR('DmaMSP.admin', 'DmaMSP.peer', 'DmaMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('DMA-MSP.admin', 'DMA-MSP.client')"
+                Rule: "OR('DmaMSP.admin', 'DmaMSP.client')"
             Admins:
                 Type: Signature
-                Rule: "OR('DMA-MSP.admin')"
+                Rule: "OR('DmaMSP.admin')"
 
         # leave this flag set to true.
         AnchorPeers:
@@ -76,10 +76,10 @@ Organizations:
     - &Org2
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: Estonian-Maritime-Authority
+        Name: EstonianMaritimeAuthority
 
         # ID to load the MSP definition as
-        ID: VTA-MSP
+        ID: VtaMSP
 
         MSPDir: crypto-config/peerOrganizations/veeteedeamet.ee/msp
 
@@ -89,13 +89,13 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('VTA-MSP.admin', 'VTA-MSP.peer', 'VTA-MSP.client')"
+                Rule: "OR('VtaMSP.admin', 'VtaMSP.peer', 'VtaMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('VTA-MSP.admin', 'VTA-MSP.client')"
+                Rule: "OR('VtaMSP.admin', 'VtaMSP.client')"
             Admins:
                 Type: Signature
-                Rule: "OR('VTA-MSP.admin')"
+                Rule: "OR('VtaMSP.admin')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
