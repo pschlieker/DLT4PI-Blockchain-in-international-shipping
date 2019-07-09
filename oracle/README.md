@@ -42,3 +42,16 @@ The script ./moveShip.sh can be used as follows
 * Move ship out of range of MA: ./moveShip.sh out 
 ## API Usage
 The docker-compose brings up a simple Apache PHP Container, which provides the API under http://localhost:9001/ship1
+## Usage with in Chaincode
+* Install module request: `npm install request`
+* Import Request in chaincode file: `const request = require('request');`
+* Retrieve position from API: 
+```
+request('http://192.168.179.58:9001/ship1', { json: true }, (err, res, body) => {
+        if (err) { return console.log(err); }
+        let shipLat = body.entries[0].lat;
+        let shipLng = body.entries[0].lng;
+    });
+```
+* Because the API lives within another container currently the API ist accessed via the external IP. Should be changed once they are in the same docker network
+* Example see exampleChaincode.js
