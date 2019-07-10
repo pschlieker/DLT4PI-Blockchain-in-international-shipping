@@ -7,7 +7,16 @@ const walletPath = path.join(process.cwd(), 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
+let chaincodeVer = 'v1';
+
 module.exports = {
+
+    // add chaincode version everytime
+    getNewChaincodeVer() {
+        let newVer = chaincodeVer.charAt(0) + (parseInt(chaincodeVer.charAt(1)) + 1);
+        chaincodeVer = newVer;
+        return chaincodeVer;
+    },
 
     /**
      * Execute queryShip chaincode
@@ -89,14 +98,14 @@ module.exports = {
 
     /**
      * Execute grantCertAccess to grant the private certificate collection to another Marititme Authority
+     * e.g. grantCertAccess('connectionProfile.json', 'Denmark', 'shipChannel', 'Denmark', 'Estonia)
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
-     * @param {string} chaincodeVersion - new version of chaincode (e.g. 0.0.3 or v3)
      * @param {string} channelName
-     * @param {string} requester
-     * @param {string} target
+     * @param {string} requester - the country name of the requesting authority
+     * @param {string} target - the country name of the queried ship
      */
-    async grantCertAccess(ccpPath, username, chaincodeVersion, channelName, requester, target) {
+    async grantCertAccess(ccpPath, username, channelName, requester, target) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -130,6 +139,8 @@ module.exports = {
 
             // Get the identity (client) connected to the gateway
             const client = gateway.getClient();
+            // Get new chaincode version
+            const chaincodeVersion = this.getNewChaincodeVer();
             // Install chaincode
             await client.installChaincode({
                 chaincodePath: '../../chaincode/lib/shipping',
@@ -243,10 +254,21 @@ module.exports = {
             await gateway.disconnect();
 
         } catch (error) {
-            console.error(`Failed to evaluate transaction: ${error}`);
+            console.error(`Failed to submit transaction: ${error}`);
         }
     },
 
+    /**
+     * Create a ship certificate and store it into PDC of that maritime authority
+     * @param {string} ccpPath - path to connection profile
+     * @param {string} username - username of the peer
+     * @param {string} channelName
+     * @param {string} certName
+     * @param {string} certNum
+     * @param {string} imo
+     * @param {string} issueDate
+     * @param {string} expiryDate
+     */
     async createShipCertificate(ccpPath, username, channelName, certName, certNum, imo, issueDate, expiryDate) {
         try {
             const userExists = await wallet.exists(username);
@@ -255,7 +277,7 @@ module.exports = {
                 console.log('Run the registerUser before retrying');
                 return;
             }
-            
+
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
             await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
@@ -268,13 +290,66 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Submit the specified transaction.
-
             // createPrivateShipCertificate - requires 5 argument, e.g. ('createPrivateShipCertificate', 'Cargo ship safety certificate', '567890', '9166778', '2010-01-01', '2020-12-31')
             const transactionName = 'createPrivateShipCertificate';
-            await contract.submitTransaction(transactionName, certName, certNum, imo, issueDate, expiryDate);
+            await contract.submitTransaction(transactionName, certName, certNum, imo, new Date(issueDate), new Date(expiryDate));
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();
+
+        } catch (error) {
+            console.error(`Failed to submit transaction: ${error}`);
+        }
+    },
+
+    /**
+     * Request ship certificate
+     * 1. call the chaincode to verify whether the ship location is within country's border
+     * 2. if true, grant the requesting authority access to certificate using grantCertAccess()
+     * @param {string} ccpPath - path to connection profile
+     * @param {string} username - username of the peer
+     * @param {string} channelName
+     * @param {string} imo
+     */
+    async requestShipCert(ccpPath, username, channelName, imo) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the contract from the network.
+            const contractName = 'shipping';
+            const contract = network.getContract(contractName);
+
+            // Get the MSPid of the logged in identity (i.e. the requesting authority)
+            const requester = gateway.getClient().getMspid();   // assume MSPid is the country name
+
+            // Get the country of the queried ship
+            const ship = await contract.evaluateTransaction('queryShip', imo);
+            console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
+            const targetCountry = JSON.parse(ship.toString()).flag;
+
+            // Check the location of the ship by calling the verifyLocation chaincode
+            const isWithinBorder = await contract.evaluateTransaction('verifyLocation', imo, requester);
+            console.log(`Evaluated verifyLocation transaction, result is: ${isWithinBorder.toString()}`);
+
+            // If consensus is reached on the location of the ship (i.e. ship is within the requester's borders)
+            if (isWithinBorder) {
+                this.grantCertAccess(ccpPath, username, channelName, requester, targetCountry);
+                console.log(`Certificates of ship ${imo}: Access Granted`);
+            } else {
+                console.log(`The ship ${imo} is not within ${requester}'s borders`);
+            }
 
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);

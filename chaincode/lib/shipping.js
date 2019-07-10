@@ -290,7 +290,7 @@ let Chaincode = class {
         }
         console.log(shipAsBytes.toString());
         return shipAsBytes;
-    }    
+    }
 
     // ==========================================================================
     // queryAllShipsByCountry - return an array of ships on the blockchain
@@ -315,14 +315,16 @@ let Chaincode = class {
     }
 
     // ==========================================================================
-    // verifyLocation - verify the ship location by calling external api (oracle)
+    // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
     // ==========================================================================
     async verifyLocation(stub, args) {
-        // e.g. '{"Args":["verifyLocation", "5671234"]}'
+        // e.g. '{"Args":["verifyLocation", "5671234", "Denmark"]}'
         console.info('============= START : Verify Location ===========');
-        if (args.length !== 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo) eg: imo');
+        if (args.length !== 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (imo, country)');
         }
+        let imo = args[0];
+        let country = args[1];
         // TODO: connect to external api
         let api = 'http://192.168.179.58:9001/ship1'
         request(api, { json: true }, (err, res, body) => {
@@ -332,18 +334,6 @@ let Chaincode = class {
             // check if the location is within the country's maritime borders
 
         });
-    }
-
-
-    // ==========================================================================
-    // requestShipCert - query ship certificate by Maritime Authority
-    // e.g. '{"Args":["queryShipCertificate", "5671234"]}'
-    // 1. requesting authority execute this function
-    // 2. verify location with oracle (external api dummy)
-    // 3. grant access for the requesting authority to access the private certificate
-    // ==========================================================================
-    async requestShipCert(stub, args) {
-
     }
 
 };
