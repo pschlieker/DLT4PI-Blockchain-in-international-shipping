@@ -4,6 +4,9 @@ const shim = require('fabric-shim');
 const ClientIdentity = shim.ClientIdentity;
 const util = require('util');
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
+const request = require('request')
 
 class MaritimeAuthority {
     constructor(objType, name, country, domain, pubKey, privKey) {
@@ -122,10 +125,10 @@ let Chaincode = class {
     }
 
     // ===========================================================================
-    // initLedger - create 3 Marititme Authorities (Denmark, Estonia and Germany), 
+    // init - create 3 Marititme Authorities (Denmark, Estonia and Germany),
     //              each with 2 ships, store into chaincode state
     // ===========================================================================
-    async initLedger(stub, args) {
+    async init(stub) {
         console.info('============= START : Initialize Ledger ===========');
         const denmark = crypto.createDiffieHellman(2048);
         const denmarkKey = denmark.generateKeys('base64');
@@ -284,17 +287,33 @@ let Chaincode = class {
     // ==========================================================================
     async verifyLocation(stub, args) {
         // e.g. '{"Args":["verifyLocation", "5671234"]}'
+        console.info('============= START : Verify Location ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo) eg: imo');
+        }
+        // TODO: connect to external api
+        // api = 'LINK_HERE'
+        // request(api, (err, res, body) => {
+        //     if (!err || res.statusCode === 200) {
+        //         if (body.result) {
+        //             return true;
+        //         }
+        //     } else {
+        //         throw new Error('Error connecting to external api');
+        //     }
+        // });
     }
 
 
     // ==========================================================================
     // requestShipCert - query ship certificate by Maritime Authority
+    // e.g. '{"Args":["queryShipCertificate", "5671234"]}'
+    // 1. requesting authority execute this function
+    // 2. verify location with oracle (external api dummy)
+    // 3. grant access for the requesting authority to access the private certificate
     // ==========================================================================
     async requestShipCert(stub, args) {
-        // e.g. '{"Args":["queryShipCertificate", "5671234"]}'
-        // 1. requesting authority execute this function
-        // 2. verify location with oracle (external api dummy)
-        // 3. grant access for the requesting authority to access the private certificate
+        
     }
 
 };
