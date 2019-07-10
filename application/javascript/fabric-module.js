@@ -245,6 +245,39 @@ module.exports = {
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);
         }
-    }
+    },
 
+    async createShipCertificate(ccpPath, username, channelName, certName, certNum, imo, issueDate, expiryDate) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+            
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the contract from the network.
+            const contractName = 'shipping';
+            const contract = network.getContract(contractName);
+
+            // Submit the specified transaction.
+
+            // createPrivateShipCertificate - requires 5 argument, e.g. ('createPrivateShipCertificate', 'Cargo ship safety certificate', '567890', '9166778', '2010-01-01', '2020-12-31')
+            const transactionName = 'createPrivateShipCertificate';
+            await contract.submitTransaction(transactionName, certName, certNum, imo, issueDate, expiryDate);
+            console.log('Transaction has been submitted');
+
+            await gateway.disconnect();
+
+        } catch (error) {
+            console.error(`Failed to evaluate transaction: ${error}`);
+        }
+    }
 };

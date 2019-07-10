@@ -6,7 +6,7 @@ const util = require('util');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
-const request = require('request')
+const request = require('request');
 
 class MaritimeAuthority {
     constructor(objType, name, country, domain, pubKey, privKey) {
@@ -66,7 +66,7 @@ class Ship {
 // If location consensus is reached, the chaincode function will trigger a chaincode upgrade
 // to update the endorsement policy of the corresponding PrivateShipCertificates PDC
 class PrivateShipCertificate {
-    constructor(objType, certName, certNum, imo, issueDate, expiryDate, accessList) {
+    constructor(objType, certName, certNum, imo, issueDate, expiryDate) {
         this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
         this.certName = certName;
         this.certNum = certNum;
@@ -216,6 +216,38 @@ let Chaincode = class {
     }
 
     // ==========================================================================
+    // createPrivateShipCertificate - create a ship certificate to the PDC
+    // ==========================================================================
+    async createPrivateShipCertificate(stub, args) {
+        // e.g. '{"Args":["createPrivateShipCertificate", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31"]}'
+        console.info('============= START : Creating Ship Certificate ===========');
+        if (args.length !== 5) {
+            throw new Error('Incorrect number of arguments. Expecting 5 argument (certName, certNum, imo, issueDate, expiryDate)');
+        }
+        // === Create the certificate ===
+        let imo = args[2];
+        let newCert = new PrivateShipCertificate('privShipCert', args[0], args[1], imo, args[3], args[4]);
+
+        // === Get the flag of the ship from chaincode state ===
+        let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
+        if (!ship || ship.length <= 1) {
+            throw new Error('Error occured retrieving the ship');
+        }
+        let country = ship.flag;
+
+        // === Get the certificates of the ship from the state ===
+        let certsAsBytes = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        let certs = JSON.parse(certsAsBytes);
+        // === Push the new certificates into the list of certificates ===
+        certs.push(newCert);
+
+        // === Save PrivateDenmarkShipCertificates to state ===
+        certsAsBytes = Buffer.from(JSON.stringify(certs));
+        await stub.PutPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
+        console.info(`Added <--> ${args[0]} to ${imo}`);
+    }
+
+    // ==========================================================================
     // createShip - create a ship to the state
     // ==========================================================================
     async createShip(stub, args) {
@@ -292,16 +324,14 @@ let Chaincode = class {
             throw new Error('Incorrect number of arguments. Expecting 1 argument (imo) eg: imo');
         }
         // TODO: connect to external api
-        // api = 'LINK_HERE'
-        // request(api, (err, res, body) => {
-        //     if (!err || res.statusCode === 200) {
-        //         if (body.result) {
-        //             return true;
-        //         }
-        //     } else {
-        //         throw new Error('Error connecting to external api');
-        //     }
-        // });
+        let api = 'http://192.168.179.58:9001/ship1'
+        request(api, { json: true }, (err, res, body) => {
+            if (err || res.statusCode !== 200) { throw new Error(err); }
+            let shipLat = body.entries[0].lat;
+            let shipLng = body.entries[0].lng;
+            // check if the location is within the country's maritime borders
+
+        });
     }
 
 
@@ -313,7 +343,7 @@ let Chaincode = class {
     // 3. grant access for the requesting authority to access the private certificate
     // ==========================================================================
     async requestShipCert(stub, args) {
-        
+
     }
 
 };
