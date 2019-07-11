@@ -268,8 +268,9 @@ module.exports = {
      * @param {string} imo
      * @param {string} issueDate
      * @param {string} expiryDate
+     * @param {string} certHash - hash stored on IPFS
      */
-    async createShipCertificate(ccpPath, username, channelName, certName, certNum, imo, issueDate, expiryDate) {
+    async createShipCertificate(ccpPath, username, channelName, certName, certNum, imo, issueDate, expiryDate, certHash) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -290,9 +291,9 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Submit the specified transaction.
-            // createPrivateShipCertificate - requires 5 argument, e.g. ('createPrivateShipCertificate', 'Cargo ship safety certificate', '567890', '9166778', '2010-01-01', '2020-12-31')
+            // createPrivateShipCertificate - requires 5 argument, e.g. ('createPrivateShipCertificate', 'Cargo ship safety certificate', '567890', '9166778', '2010-01-01', '2020-12-31', 'IPFS_Hash_to_Cert')
             const transactionName = 'createPrivateShipCertificate';
-            await contract.submitTransaction(transactionName, certName, certNum, imo, new Date(issueDate), new Date(expiryDate));
+            await contract.submitTransaction(transactionName, certName, certNum, imo, new Date(issueDate), new Date(expiryDate), certHash);
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();

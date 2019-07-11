@@ -1,28 +1,21 @@
 'use strict';
+import { insidePolygon } from 'geolocation-utils'
 
 const shim = require('fabric-shim');
 const ClientIdentity = shim.ClientIdentity;
 const util = require('util');
-const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const request = require('request');
 
 class MaritimeAuthority {
-    constructor(objType, name, country, domain, pubKey, privKey) {
+    constructor(objType, name, country, domain, borders) {
         this.objType = objType; // "MA" - used to distinguish  various types of objects in state database
         this.name = name;
         this.country = country; // country is the key
         this.domain = domain;
-        this.pubKey = pubKey;
-        this.privKey = privKey;
+        this.borders = borders;
         this.shipList = [];
-    }
-    getPubKey() {
-        return this.pubKey;
-    }
-    getPrivateKey() {
-        return this.privKey;
     }
     getShipList() {
         return this.shipList;
@@ -41,17 +34,6 @@ class Ship {
         this.homePort = homePort;
         this.tonnage = tonnage;
         this.owner = owner;
-        this.certHash = '';
-    }
-    getCert() {
-        if (this.certHash) {
-            return this.certHash;
-        } else {
-            throw new Error('certHash is empty');
-        }
-    }
-    setCert(certHash) {
-        this.certHash = certHash;
     }
 }
 
@@ -66,13 +48,24 @@ class Ship {
 // If location consensus is reached, the chaincode function will trigger a chaincode upgrade
 // to update the endorsement policy of the corresponding PrivateShipCertificates PDC
 class PrivateShipCertificate {
-    constructor(objType, certName, certNum, imo, issueDate, expiryDate) {
+    constructor(objType, certName, certNum, imo, issueDate, expiryDate, certHash) {
         this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
         this.certName = certName;
         this.certNum = certNum;
         this.imo = imo; // imo is the key
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
+        this.certHash = certHash;
+    }
+    getCertHash() {
+        if (this.certHash || this.certHash.length <= 0) {
+            return this.certHash;
+        } else {
+            throw new Error('certHash is empty');
+        }
+    }
+    setCertHash(certHash) {
+        this.certHash = certHash;
     }
 }
 
@@ -130,16 +123,13 @@ let Chaincode = class {
     // ===========================================================================
     async init(stub) {
         console.info('============= START : Initialize Ledger ===========');
-        const denmark = crypto.createDiffieHellman(2048);
-        const denmarkKey = denmark.generateKeys('base64');
-        const estonia = crypto.createDiffieHellman(2048);
-        const estoniaKey = estonia.generateKeys('base64');
 
-        // === Create MaritimeAuthorities object ===
+        // === Create MaritimeAuthorities objects ===
+        let denmarkBorders = JSON.parse(fs.readFileSync(path.resolve('..', '..', 'oracle', 'denmark-eez-outerbounds.json'))).geometry.coordinates;
+        let estoniaBorders = JSON.parse(fs.readFileSync(path.resolve('..', '..', 'oracle', 'estonia-eez-outerbounds.json'))).geometry.coordinates;
         let maritimeAuthorities = [
-            new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkKey.getPublicKey('base64'), denmarkKey.getPrivateKey('base64')),
-            new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaKey.getPublicKey('base64'), estoniaKey.getPrivateKey('base64')),
-            // new MaritimeAuthority('MA', 'Deutsche Flagge', 'Germany', 'deutsche-flagge.de', germanyKey.getPubKey('base64'), germany.getPrivateKey('base64'))
+            new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkBorders),
+            new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaBorders)
         ];
         let denmarkShips = [
             new Ship('ship', '9166778', 'AOTEA MAERSK', 'Container Ship', 'Denmark', 'Port of Copenhagen', 92198, 'Alice'),
@@ -154,22 +144,22 @@ let Chaincode = class {
 
         // === Save MaritimeAuthorities to state ===
         for (let i = 0; i < maritimeAuthorities.length; i++) {
-            await stub.putState(maritimeAuthorities[i].country.toUpperCase(), Buffer.from(JSON.stringify(maritimeAuthorities[i])));
+            await stub.putState(maritimeAuthorities[i].country, Buffer.from(JSON.stringify(maritimeAuthorities[i])));
             console.info('Added <--> ' + maritimeAuthorities[i]);
         }
 
         // === Create PrivateShipCertificates private data collections, save to state ===
         let PrivateDenmarkShipCertificates = [
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1)),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)),
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2)),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2))
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)), '',
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2), ''),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2), '')
         ]
         let PrivateEstoniaShipCertificates = [
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3)),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9148843', new Date(2019, 3, 3), new Date(2021, 3, 3)),
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9762687', new Date(2018, 4, 4), new Date(2020, 4, 4)),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4))
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9148843', new Date(2019, 3, 3), new Date(2021, 3, 3), ''),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9762687', new Date(2018, 4, 4), new Date(2020, 4, 4), ''),
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4), '')
         ]
 
         // === Save PrivateDenmarkShipCertificates to state ===
@@ -219,14 +209,14 @@ let Chaincode = class {
     // createPrivateShipCertificate - create a ship certificate to the PDC
     // ==========================================================================
     async createPrivateShipCertificate(stub, args) {
-        // e.g. '{"Args":["createPrivateShipCertificate", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31"]}'
+        // e.g. '{"Args":["createPrivateShipCertificate", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
         console.info('============= START : Creating Ship Certificate ===========');
         if (args.length !== 5) {
-            throw new Error('Incorrect number of arguments. Expecting 5 argument (certName, certNum, imo, issueDate, expiryDate)');
+            throw new Error('Incorrect number of arguments. Expecting 5 argument (certName, certNum, imo, issueDate, expiryDate, certHash)');
         }
         // === Create the certificate ===
         let imo = args[2];
-        let newCert = new PrivateShipCertificate('privShipCert', args[0], args[1], imo, args[3], args[4]);
+        let newCert = new PrivateShipCertificate('privShipCert', args[0], args[1], imo, args[3], args[4], args[5]);
 
         // === Get the flag of the ship from chaincode state ===
         let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
@@ -315,6 +305,28 @@ let Chaincode = class {
     }
 
     // ==========================================================================
+    // queryMaritimeAuthority - return the queried Maritime Authority from the state
+    // ==========================================================================
+    async queryMaritimeAuthority(stub, args) {
+        // e.g. '{"Args":["queryMaritimeAuthority", "Denmark"]}'
+        console.info('============= START : Query Maritime Authority ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (country) eg: Denmark');
+        }
+
+        // === Query MaritimeAuthority object ===
+        let country = args[0];
+
+        let maAsBytes = await stub.getState(country);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
+        }
+        console.log(maAsBytes.toString());
+        return maAsBytes;
+    }
+
+
+    // ==========================================================================
     // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
     // ==========================================================================
     async verifyLocation(stub, args) {
@@ -325,14 +337,23 @@ let Chaincode = class {
         }
         let imo = args[0];
         let country = args[1];
+
+        // Get the country's borders
+        let ma = await JSON.parse(this.queryMaritimeAuthority(stub, country));
+        let borders = ma.borders;
+
         // TODO: connect to external api
-        let api = 'http://192.168.179.58:9001/ship1'
+        let api = `http://192.168.179.58:9001/${imo}`
         request(api, { json: true }, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
             let shipLat = body.entries[0].lat;
             let shipLng = body.entries[0].lng;
             // check if the location is within the country's maritime borders
-
+            if (insidePolygon([shipLat, shipLng], borders)) {
+                return true;
+            } else { 
+                return false;
+            }
         });
     }
 
