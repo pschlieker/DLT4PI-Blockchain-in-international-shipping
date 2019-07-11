@@ -1,5 +1,5 @@
 'use strict';
-import { insidePolygon } from 'geolocation-utils'
+import { insidePolygon } from 'geolocation-utils';
 
 const shim = require('fabric-shim');
 const ClientIdentity = shim.ClientIdentity;
