@@ -1,0 +1,28 @@
+---
+name: EstonianMaritimeAuthority
+version: 1.0.0
+client:
+  organization: Vta
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Org1:
+    mspid: VtaMSP
+    peers:
+    - peer0.veeteedeamet.ee
+    - peer1.veeteedeamet.ee
+peers:
+  peer0.veeteedeamet.ee:
+    url: grpcs://localhost:9051
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/veeteedeamet.ee/tlsca/tlsca.veeteedeamet.ee-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.veeteedeamet.ee
+  peer1.veeteedeamet.ee:
+    url: grpcs://localhost:10051
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/veeteedeamet.ee/tlsca/tlsca.veeteedeamet.ee-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.veeteedeamet.ee

@@ -1,0 +1,28 @@
+---
+name: DanishMaritimeAuthority
+version: 1.0.0
+client:
+  organization: Dma
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Org1:
+    mspid: DmaMSP
+    peers:
+    - peer0.dma.dk
+    - peer1.dma.dk
+peers:
+  peer0.dma.dk:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/dma.dk/tlsca/tlsca.dma.dk-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer0.dma.dk
+  peer1.dma.dk:
+    url: grpcs://localhost:8051
+    tlsCACerts:
+      path: crypto-config/peerOrganizations/dma.dk/tlsca/tlsca.dma.dk-cert.pem
+    grpcOptions:
+      ssl-target-name-override: peer1.dma.dk
