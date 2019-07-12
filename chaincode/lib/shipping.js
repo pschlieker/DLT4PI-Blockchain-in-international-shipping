@@ -1,9 +1,7 @@
-'use strict';
-import { insidePolygon } from 'geolocation-utils';
-
 const shim = require('fabric-shim');
 const ClientIdentity = shim.ClientIdentity;
-const util = require('util');
+// const util = require('util');
+const geolocation = require('geolocation-utils');
 const path = require('path');
 const fs = require('fs');
 const request = require('request');
@@ -70,7 +68,7 @@ class PrivateShipCertificate {
 }
 
 let Chaincode = class {
-    
+
     // ===========================
     // Init initializes chaincode
     // Init method is called when chaincode "shipping" is instantiated
@@ -79,7 +77,7 @@ let Chaincode = class {
         console.info('=========== Instantiated shipping chaincode ===========');
         return shim.success();
     }
-    
+
     // ===========================
     // Invoke chaincode
     // ===========================
@@ -106,22 +104,20 @@ let Chaincode = class {
         let cid = new ClientIdentity(stub);
         let mspid = cid.getMSPID();
         switch(mspid) {
-        case 'DenmarkMSP':
+        case 'DmaMSP':
             return true;
-        case 'EstoniaMSP':
+        case 'VtaMSP':
             return true;
-        // case 'GermanyMSP':
-        //     return true;
         default:
             throw new Error('Wrong MSP');
         }
     }
 
     // ===========================================================================
-    // init - create 3 Marititme Authorities (Denmark, Estonia and Germany),
+    // initLedger - create 3 Marititme Authorities (Denmark, Estonia and Germany),
     //              each with 2 ships, store into chaincode state
     // ===========================================================================
-    async init(stub) {
+    async initLedger(stub) {
         console.info('============= START : Initialize Ledger ===========');
 
         // === Create MaritimeAuthorities objects ===
@@ -154,13 +150,13 @@ let Chaincode = class {
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)), '',
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2), ''),
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2), '')
-        ]
+        ];
         let PrivateEstoniaShipCertificates = [
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9148843', new Date(2019, 3, 3), new Date(2021, 3, 3), ''),
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9762687', new Date(2018, 4, 4), new Date(2020, 4, 4), ''),
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4), '')
-        ]
+        ];
 
         // === Save PrivateDenmarkShipCertificates to state ===
         for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
@@ -343,15 +339,15 @@ let Chaincode = class {
         let borders = ma.borders;
 
         // TODO: connect to external api
-        let api = `http://192.168.179.58:9001/${imo}`
+        let api = `http://192.168.179.58:9001/${imo}`;
         request(api, { json: true }, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
             let shipLat = body.entries[0].lat;
             let shipLng = body.entries[0].lng;
             // check if the location is within the country's maritime borders
-            if (insidePolygon([shipLat, shipLng], borders)) {
+            if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
                 return true;
-            } else { 
+            } else {
                 return false;
             }
         });
@@ -359,4 +355,4 @@ let Chaincode = class {
 
 };
 
-
+shim.start(new Chaincode());

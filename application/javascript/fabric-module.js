@@ -124,7 +124,7 @@ module.exports = {
                 if (collection.name === `collection${targetName}ShipCertificates`) {
                     let policy = collection.policy; // OR('DenmarkMSP.member') change to OR('DenmarkMSP.member', 'EstoniaMSP.member')
                     let orginalPolicy = policy.substring(0, policy.lastIndexOf('\'') + 1);
-                    let requesterMSP = requesterName + 'MSP.member';
+                    let requesterMSP = requesterName + 'MSP.client';
                     let newPolicy = orginalPolicy + `, '${requesterMSP}')`;
                     collection.policy = newPolicy;
                     console.log('New policy will be: ' + newPolicy);
@@ -143,10 +143,10 @@ module.exports = {
             const chaincodeVersion = this.getNewChaincodeVer();
             // Install chaincode
             await client.installChaincode({
-                chaincodePath: '../../chaincode/lib/shipping',
                 chaincodeId: 'shipping',
-                chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
                 chaincodeType: 'node',
+                chaincodePath: '../../chaincode/lib/shipping',
+                chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
                 channelNames: [channelName]
             });
 
@@ -154,9 +154,10 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
             // Upgrade chaincode
             let proposalResponse = await network.sendUpgradeProposal({
-                chaincodeType: 'node',
                 chaincodeId: 'shipping',
+                chaincodeType: 'node',
                 chaincodeVersion: chaincodeVersion,
+                'collections-config': collectionConfigPath,
                 txId: client.newTransactionID()
             });
             console.log(proposalResponse);
