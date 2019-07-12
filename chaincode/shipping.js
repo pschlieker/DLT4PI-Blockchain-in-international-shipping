@@ -117,12 +117,12 @@ let Chaincode = class {
     // initLedger - create 3 Marititme Authorities (Denmark, Estonia and Germany),
     //              each with 2 ships, store into chaincode state
     // ===========================================================================
-    async initLedger(stub) {
+    async initLedger(stub, args) {
         console.info('============= START : Initialize Ledger ===========');
 
         // === Create MaritimeAuthorities objects ===
-        let denmarkBorders = JSON.parse(fs.readFileSync(path.resolve('..', '..', 'oracle', 'denmark-eez-outerbounds.json'))).geometry.coordinates;
-        let estoniaBorders = JSON.parse(fs.readFileSync(path.resolve('..', '..', 'oracle', 'estonia-eez-outerbounds.json'))).geometry.coordinates;
+        let denmarkBorders = JSON.parse(fs.readFileSync(path.resolve('denmark-eez-outerbounds.json'))).geometry.coordinates;
+        let estoniaBorders = JSON.parse(fs.readFileSync(path.resolve('estonia-eez-outerbounds.json'))).geometry.coordinates;
         let maritimeAuthorities = [
             new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkBorders),
             new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaBorders)
@@ -198,6 +198,7 @@ let Chaincode = class {
 
         // === Get the ship certificate from chaincode state ===
         let certs = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        console.info('============= END : Reading Ship Certificates ===========');
         return certs;
     }
 
@@ -231,6 +232,7 @@ let Chaincode = class {
         certsAsBytes = Buffer.from(JSON.stringify(certs));
         await stub.PutPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
+        console.info('============= END : Creating Ship Certificate ===========');
     }
 
     // ==========================================================================
@@ -275,6 +277,7 @@ let Chaincode = class {
             throw new Error(imo + ' does not exist: ');
         }
         console.log(shipAsBytes.toString());
+        console.info('============= END : Query Ship ===========');
         return shipAsBytes;
     }
 
@@ -297,6 +300,7 @@ let Chaincode = class {
         if (!result || result.toString().length <= 0) {
             throw new Error(`ShipList of ${country} does not exist.`);
         }
+        console.info('============= END : Query All Ships by Country ===========');
         return result;
     }
 
@@ -318,6 +322,7 @@ let Chaincode = class {
             throw new Error(country + ' does not exist: ');
         }
         console.log(maAsBytes.toString());
+        console.info('============= END : Query Maritime Authority ===========');
         return maAsBytes;
     }
 
@@ -346,6 +351,7 @@ let Chaincode = class {
             let shipLng = body.entries[0].lng;
             // check if the location is within the country's maritime borders
             if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
+                console.info('============= Verify Location ===========');
                 return true;
             } else {
                 return false;
