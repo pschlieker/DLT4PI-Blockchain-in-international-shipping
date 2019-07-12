@@ -1,14 +1,10 @@
 # Install and instantiate the chaincode
 
 ## Required packages
+- A fabric network running with version 1.4
 `npm install geolocation-utils`
 `npm install request`
 `npm install fabric-shim`
-A fabric network running with version 1.4
-
-sudo docker exec -i -t peer0.veeteedeamet.ee /bin/bash
-sudo docker exec -i -t peer0.dma.dk /bin/bash
-
 
 ## After the network is built in the fabric-network folder
 - Enter the cli container
