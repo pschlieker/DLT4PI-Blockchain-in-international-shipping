@@ -23,9 +23,10 @@ module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} country
      * @param {string} imo - imo number of the ship
      */
-    async queryShip(ccpPath, username, channelName, imo) {
+    async queryShip(ccpPath, username, channelName, country, imo) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -48,7 +49,7 @@ module.exports = {
             // Evaluate the specified transaction.
             // queryShip - requires 1 argument, e.g. ('queryShip', '5671234')
             const transactionName = 'queryShip';
-            const result = await contract.evaluateTransaction(transactionName, imo);
+            const result = await contract.evaluateTransaction(transactionName, country, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
 

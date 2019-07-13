@@ -147,7 +147,7 @@ let Chaincode = class {
         // === Create PrivateShipCertificates private data collections, save to state ===
         let PrivateDenmarkShipCertificates = [
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)), '',
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1), ''),
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2), ''),
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2), '')
         ];
@@ -160,7 +160,7 @@ let Chaincode = class {
 
         // === Save PrivateDenmarkShipCertificates to state ===
         for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
-            let imo = i.imo;
+            let imo = PrivateDenmarkShipCertificates[i].imo.toString();
             let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
             await stub.putPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
@@ -168,7 +168,7 @@ let Chaincode = class {
 
         // === Save PrivateEstoniaShipCertificates to state ===
         for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
-            let imo = i.imo;
+            let imo = PrivateEstoniaShipCertificates[i].imo.toString();
             let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
             await stub.putPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
@@ -260,25 +260,27 @@ let Chaincode = class {
     }
 
     // ==========================================================================
-    // queryShip - return the queried ship by country from the state
+    // queryShip - return the queried ship by imo from the state
     // ==========================================================================
     async queryShip(stub, args) {
-        // e.g. '{"Args":["queryShip", "5671234"]}'
+        // e.g. '{"Args":["queryShip", "Denmark", "9166778"]}'
         console.info('============= START : Query Ship ===========');
-        if (args.length !== 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) eg: 1234567');
+        if (args.length !== 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) eg: Denmark, 9166778');
         }
 
-        // === Query ship object ===
-        let imo = args[0];
+        // === Get MA from the state ===
+        let country = args[0];
+        let imo = args[1];
 
-        let shipAsBytes = await stub.getState(imo);
-        if (!shipAsBytes || shipAsBytes.toString().length <= 0) {
-            throw new Error(imo + ' does not exist: ');
+        let maAsBytes = await stub.getState(country);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
         }
-        console.log(shipAsBytes.toString());
+        console.log(maAsBytes.toString());
+        let ship = JSON.parse(maAsBytes).getShipList().find(ship => ship.imo === imo)
         console.info('============= END : Query Ship ===========');
-        return shipAsBytes;
+        return ship;
     }
 
     // ==========================================================================
