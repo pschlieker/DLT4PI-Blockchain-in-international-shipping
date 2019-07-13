@@ -121,8 +121,8 @@ let Chaincode = class {
         console.info('============= START : Initialize Ledger ===========');
 
         // === Create MaritimeAuthorities objects ===
-        let denmarkBorders = JSON.parse(fs.readFileSync(path.resolve('denmark-eez-outerbounds.json'))).geometry.coordinates;
-        let estoniaBorders = JSON.parse(fs.readFileSync(path.resolve('estonia-eez-outerbounds.json'))).geometry.coordinates;
+        let denmarkBorders = JSON.parse(fs.readFileSync(path.resolve('opt', 'gopath', 'src', 'github.com', 'chaincode', 'denmark-eez-outerbounds.json'))).geometry.coordinates;
+        let estoniaBorders = JSON.parse(fs.readFileSync(path.resolve('opt', 'gopath', 'src', 'github.com', 'chaincode', 'estonia-eez-outerbounds.json'))).geometry.coordinates;
         let maritimeAuthorities = [
             new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkBorders),
             new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaBorders)
