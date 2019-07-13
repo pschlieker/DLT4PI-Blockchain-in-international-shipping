@@ -197,7 +197,8 @@ function networkUp() {
   fi
 
   # now run the end to end script
-  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+  echo "Debug: Collections path: $COLLECTIONS_PATH"
+  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Test failed"
     exit 1
@@ -269,7 +270,7 @@ function upgradeNetwork() {
       docker-compose $COMPOSE_FILES up -d --no-deps $PEER
     done
 
-    docker exec cli scripts/upgrade_to_v14.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+    docker exec cli scripts/upgrade_to_v14.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH
     if [ $? -ne 0 ]; then
       echo "ERROR !!!! Test failed"
       exit 1

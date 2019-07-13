@@ -14,6 +14,7 @@ DELAY="$2"
 LANGUAGE="$3"
 TIMEOUT="$4"
 VERBOSE="$5"
+COLLECTIONS_PATH="$6"
 : ${CHANNEL_NAME:="mychannel"}
 : ${DELAY:="3"}
 : ${LANGUAGE:="golang"}
@@ -25,7 +26,7 @@ MAX_RETRY=10
 
 CC_SRC_PATH="github.com/chaincode/chaincode_example02/go/"
 if [ "$LANGUAGE" = "node" ]; then
-	CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/chaincode_example02/node/"
+	CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/node/"
 fi
 
 if [ "$LANGUAGE" = "java" ]; then
@@ -91,6 +92,7 @@ installChaincode 0 2
 
 # Instantiate chaincode on peer0.org2
 echo "Instantiating chaincode on peer0.org2..."
+echo "Debug: Collections path: $COLLECTIONS_PATH"
 instantiateChaincode 0 2
 
 # Query chaincode on peer0.org1
