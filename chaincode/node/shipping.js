@@ -15,9 +15,6 @@ class MaritimeAuthority {
         this.borders = borders;
         this.shipList = [];
     }
-    getShipList() {
-        return this.shipList;
-    }
     addShips(shipList) {
         return Array.prototype.push.apply(this.shipList, shipList);
     }
@@ -139,9 +136,13 @@ let Chaincode = class {
         maritimeAuthorities[1].addShips(estoniaShips);
 
         // === Save MaritimeAuthorities to state ===
-        for (let i = 0; i < maritimeAuthorities.length; i++) {
-            await stub.putState(maritimeAuthorities[i].country, Buffer.from(JSON.stringify(maritimeAuthorities[i])));
-            console.info('Added <--> ' + maritimeAuthorities[i]);
+        try {
+            await stub.putState('Denmark', Buffer.from(JSON.stringify(maritimeAuthorities[0])));
+            console.info('Added <--> Denmark');
+            await stub.putState('Estonia', Buffer.from(JSON.stringify(maritimeAuthorities[1])));
+            console.info('Added <--> Estonia');
+        } catch (err) {
+            throw new Error('Cannot initialize MaritimeAuthority: ' + err)
         }
 
         // === Create PrivateShipCertificates private data collections, save to state ===
@@ -159,21 +160,29 @@ let Chaincode = class {
         ];
 
         // === Save PrivateDenmarkShipCertificates to state ===
-        for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
-            let imo = PrivateDenmarkShipCertificates[i].imo.toString();
-            let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
-            await stub.putPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
-            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        try {
+            for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
+                let imo = PrivateDenmarkShipCertificates[i].imo.toString();
+                let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
+                await stub.putPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
+                console.info(`Added <--> ${PrivateDenmarkShipCertificates[i].certName} and ${PrivateDenmarkShipCertificates[i + 1].certName} to Ship ${PrivateDenmarkShipCertificates[i].imo} and ${PrivateDenmarkShipCertificates[i + 1].imo}`);
+            }
+        } catch (err) {
+            throw new Error('Cannot initialize PrivateDenmarkShipCertificates: ' + err)
         }
 
         // === Save PrivateEstoniaShipCertificates to state ===
-        for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
-            let imo = PrivateEstoniaShipCertificates[i].imo.toString();
-            let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
-            await stub.putPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
-            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        try{
+            for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
+                let imo = PrivateEstoniaShipCertificates[i].imo.toString();
+                let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
+                await stub.putPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
+                console.info(`Added <--> ${PrivateEstoniaShipCertificates[i].certName} and ${PrivateEstoniaShipCertificates[i + 1].certName} to Ship ${PrivateEstoniaShipCertificates[i].imo} and ${PrivateEstoniaShipCertificates[i + 1].imo}`);
+            }
+        } catch (err) {
+            throw new Error('Cannot initialize PrivateEstoniaShipCertificates: ' + err)
         }
-
+        
         console.info('============= END : Initialize Ledger ===========');
     }
 
@@ -278,7 +287,8 @@ let Chaincode = class {
             throw new Error(country + ' does not exist: ');
         }
         console.log(maAsBytes.toString());
-        let ship = JSON.parse(maAsBytes).getShipList().find(ship => ship.imo === imo)
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
+        console.log(ship.toString());
         console.info('============= END : Query Ship ===========');
         return ship;
     }
@@ -298,7 +308,7 @@ let Chaincode = class {
             throw new Error(country + ' does not exist.');
         }
         console.log(maAsBytes.toString());
-        let result = JSON.parse(maAsBytes).getShipList();
+        let result = JSON.parse(maAsBytes).shipList;
         if (!result || result.toString().length <= 0) {
             throw new Error(`ShipList of ${country} does not exist.`);
         }

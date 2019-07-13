@@ -89,23 +89,28 @@ echo "Installing chaincode on peer0.dma.dk ..."
 installChaincode 0 1
 echo "Install chaincode on peer0.veeteedeamet.ee ..."
 installChaincode 0 2
+echo "Installing chaincode on peer1.dma.dk ..."
+installChaincode 1 1
+echo "Install chaincode on peer1.veeteedeamet.ee ..."
+installChaincode 1 2
+
+# Instantiate chaincode on peer0.dma.dk
+echo "Instantiating chaincode on peer0.dma.dk ..."
+echo "Debug: Collections path: $COLLECTIONS_PATH"
+instantiateChaincode 0 1
 
 # Instantiate chaincode on peer0.veeteedeamet.ee
 echo "Instantiating chaincode on peer0.veeteedeamet.ee ..."
 echo "Debug: Collections path: $COLLECTIONS_PATH"
 instantiateChaincode 0 2
 
+# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvoke 0 1 0 2
+
 # Query chaincode on peer0.dma.dk
 echo "Querying chaincode on peer0.dma.dk ..."
 chaincodeQuery 0 1 100
-
-# Invoke chaincode on peer0.org1 and peer0.org2
-echo "Sending invoke transaction on peer0.org1 peer0.veeteedeamet.ee ..."
-chaincodeInvoke 0 1 0 2
-
-## Install chaincode on peer1.org2
-echo "Installing chaincode on peer1.veeteedeamet.ee ..."
-installChaincode 1 2
 
 # Query on chaincode on peer1.org2, check if the result is 90
 echo "Querying chaincode on peer1.veeteedeamet.ee ..."
