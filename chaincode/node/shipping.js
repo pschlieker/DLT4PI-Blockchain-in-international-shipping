@@ -162,7 +162,7 @@ let Chaincode = class {
         for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
             let imo = i.imo;
             let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
-            await stub.PutPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
+            await stub.putPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
         }
 
@@ -170,7 +170,7 @@ let Chaincode = class {
         for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
             let imo = i.imo;
             let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
-            await stub.PutPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
+            await stub.putPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
             console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
         }
 
@@ -197,7 +197,7 @@ let Chaincode = class {
         let country = ship.flag;
 
         // === Get the ship certificate from chaincode state ===
-        let certs = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        let certs = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
         return certs;
     }
@@ -223,14 +223,14 @@ let Chaincode = class {
         let country = ship.flag;
 
         // === Get the certificates of the ship from the state ===
-        let certsAsBytes = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         let certs = JSON.parse(certsAsBytes);
         // === Push the new certificates into the list of certificates ===
         certs.push(newCert);
 
         // === Save PrivateDenmarkShipCertificates to state ===
         certsAsBytes = Buffer.from(JSON.stringify(certs));
-        await stub.PutPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
+        await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
         console.info('============= END : Creating Ship Certificate ===========');
     }
