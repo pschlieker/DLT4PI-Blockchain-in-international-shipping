@@ -1,6 +1,6 @@
 {
 	"name": "shipping",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "shipping chaincode implemented in node.js",
 	"engines": {
 		"node": ">=8.4.0",
@@ -13,7 +13,7 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"fabric-shim": "~1.4.0",
-        "geolocation-utils": "^1.2.1",
-        "request": ">=2.88.0"
+		"geolocation-utils": "^1.2.1",
+		"request": ">=2.88.0"
 	}
 }
