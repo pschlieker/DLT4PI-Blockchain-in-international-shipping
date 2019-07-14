@@ -11,8 +11,8 @@ export class CountrySelectComponent implements OnInit {
     'Italy',
     'France',
     'Spain',
-    'Pakistan',
-    'Switzerland'
+    'Estonia',
+    'Denmark'
   ];
 
   constructor() { }
