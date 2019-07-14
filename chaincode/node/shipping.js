@@ -367,7 +367,7 @@ let Chaincode = class {
         }
 
         // TODO: connect to external api
-        let api = `http://172.31.44.43:9001/${imo}`;
+        let api = `http://oracle/${imo}`;
         request(api, { json: true }, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
             let shipLat = body.entries[0].lat;

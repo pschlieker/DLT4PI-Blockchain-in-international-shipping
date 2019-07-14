@@ -1,5 +1,6 @@
 const { FileSystemWallet, Gateway } = require('fabric-network');
 const path = require('path');
+const ipfs = require('../../ipfs/ipfs-module');
 const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
@@ -47,8 +48,9 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
-            // queryShip - requires 1 argument, e.g. ('queryShip', '5671234')
+            // queryShip - requires 2 argument, e.g. ("queryShip", "Denmark", "9166778")
             const transactionName = 'queryShip';
+            country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
             const result = await contract.evaluateTransaction(transactionName, country, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
@@ -86,8 +88,9 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
-            // queryAllShipsByCountry - requires 1 argument, e.g. ('queryAllShipsByCountry', 'Denmark')
+            // queryAllShipsByCountry - requires 1 argument, e.g. ("queryAllShipsByCountry", "Denmark")
             const transactionName = 'queryAllShipsByCountry';
+            country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
             const result = await contract.evaluateTransaction(transactionName, country);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
@@ -115,8 +118,8 @@ module.exports = {
                 return;
             }
 
-            let requesterName = requester.charAt(0).toUpperCase() + requester.slice(1);
-            let targetName = target.charAt(0).toUpperCase() + target.slice(1);
+            let requesterName = requester.charAt(0).toUpperCase() + requester.slice(1).toLowerCase();
+            let targetName = target.charAt(0).toUpperCase() + target.slice(1).toLowerCase();
             let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config.json');
 
             // read the original endorsement policy
@@ -271,9 +274,9 @@ module.exports = {
      * @param {string} imo
      * @param {string} issueDate
      * @param {string} expiryDate
-     * @param {string} certHash - hash stored on IPFS
+     * @param {string} filePath - the PDF certificate to be stored on IPFS
      */
-    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
+    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, filePath) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -293,10 +296,13 @@ module.exports = {
             const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
+            // Upload the certificate to IPFS
+            let fileHash = await ipfs.uploadFile(filePath);
+
             // Submit the specified transaction.
             // createPrivateShipCertificate - requires 7 argument, e.g. ("createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert")
             const transactionName = 'createPrivateShipCertificate';
-            await contract.submitTransaction(transactionName, country, certName, certNum, imo, new Date(issueDate), new Date(expiryDate), certHash);
+            await contract.submitTransaction(transactionName, country, certName, certNum, imo, new Date(issueDate), new Date(expiryDate), fileHash);
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();
