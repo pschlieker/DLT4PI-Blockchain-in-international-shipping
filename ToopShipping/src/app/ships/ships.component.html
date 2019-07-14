@@ -1,5 +1,5 @@
-<h1 *ngIf="selectedCountry !== undefined">You have selected {{selectedCountry}}</h1>
-<h1 class="heading-margin" *ngIf="selectedCountry === undefined">Please choose a country first!</h1>
+<h2 class="heading-margin" *ngIf="selectedCountry !== undefined">You have selected {{selectedCountry}}</h2>
+<h2 class="heading-margin" *ngIf="selectedCountry === undefined">Please choose a country first!</h2>
 
 <div *ngIf="selectedCountry !== undefined">
 <!-- Button trigger modal -->
@@ -11,7 +11,7 @@
     Search ships
   </button>
 
-  <button (click)="testFunc()"> Testing api </button>
+  <!--<button (click)="testFunc()"> Testing api </button>-->
   <div class="row"></div>
   <!--Ship list table -->
   <table class="table table-class">

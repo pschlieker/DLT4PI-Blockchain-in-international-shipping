@@ -1,4 +1,4 @@
-<h1 class="heading-margin" *ngIf="shipId !== undefined">You have selected ship {{shipId}}</h1>
+<h2 class="heading-margin" *ngIf="shipId !== undefined">You have selected ship {{shipId}}</h2>
 
 <div *ngIf="shipId !== undefined">
   <button type="button" class="btn-sm btn-primary button-margin" routerLink="/ships/{{selectedCountry}}">
@@ -9,7 +9,7 @@
     Add a certificate
   </button>
   <div class="row"></div>
-  <button (click)="downloadCertificate()">Download</button>
+  <!--<button (click)="downloadCertificate()">Download</button>-->
 
   <table class="table" style="margin-top: 5%">
     <thead>
