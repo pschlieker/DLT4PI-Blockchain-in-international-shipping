@@ -108,22 +108,91 @@ instantiateChaincode 0 2
 echo "Sending invoke initLedger transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
 chaincodeInvokeInitLedger 0 1 0 2
 
-# Query chaincode on peer0.dma.dk
-echo "Querying chaincode on peer0.dma.dk ..."
-chaincodeQuery 0 1
+echo '==================START: Query transactions=================='
 
-# Query on chaincode on peer1.org2
-echo "Querying chaincode on peer1.veeteedeamet.ee ..."
-chaincodeQuery 1 2
+# ==================Query Ship Certificates Part==================
 
-# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
-echo "Sending invoke createPrivateShipCertificate transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-chaincodeInvokeCreateCert 0 1 0 2
+# Query Denmark ship certificate on peer0.dma.dk
+# Expected: Denmark MA could access Denmark ship certificates
+echo "Querying Denmark certificates on peer0.dma.dk ..."
+chaincodeQueryDenmarkShipCert 0 1
 
-# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+# Query Estonia ship certificate on peer1.veeteedeamet.ee
+# Expected: Estonia MA could access Estonia ship certificates
+echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
+chaincodeQueryEstoniaShipCert 1 2
+
+# Query Denmark ship certificate on peer1.veeteedeamet.ee
+# Expected: Estonia MA could NOT access Denmark ship certificates
+echo "Querying Denmark certificates on peer1.veeteedeamet.ee ..."
+chaincodeQueryDenmarkShipCert 1 2
+
+# Query Estonia ship certificate on peer0.dma.dk
+# Expected: Denmark MA could NOT access Estonia ship certificates
+echo "Querying Denmark certificates on peer0.dma.dk ..."
+chaincodeQueryEstoniaShipCert 0 1
+
+# ==================Query Ship Part==================
+
+# Query Denmark ship on peer0.dma.dk
+# Expected: Denmark MA could access Denmark ship
+echo "Querying Denmark ship on peer0.dma.dk ..."
+chaincodeQueryDenmarkShip 0 1
+
+# Query Estonia ship on peer0.dma.dk
+# Expected: Denmark MA could access Estonia ship
+echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
+chaincodeQueryEstoniaShip 1 1
+
+# Query Denmark ship on peer0.veeteedeamet.ee
+# Expected: Estonia MA could access Denmark ship
+echo "Querying Denmark ship on peer0.dma.dk ..."
+chaincodeQueryDenmarkShip 0 2
+
+# Query Estonia ship on peer1.veeteedeamet.ee
+# Expected: Estonia MA could access Estonia ship
+echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
+chaincodeQueryEstoniaShip 1 2
+
+echo '==================END: Query transactions=================='
+
+echo '==================START: Invoke transactions=================='
+
+# Invoke createPrivateShipCertificate on peer0.dma.dk
+echo "Sending invoke createPrivateShipCertificate transaction on peer0.dma.dk ..."
+chaincodeInvokeCreateDenmarkCert 0 1
+
+# Invoke createPrivateShipCertificate on peer0.veeteedeamet.ee
+echo "Sending invoke createPrivateShipCertificate transaction on peer0.veeteedeamet.ee ..."
+chaincodeInvokeCreateEstoniaCert 0 2
+
+# Invoke createShip on peer0.dma.dk and peer0.veeteedeamet.ee
 echo "Sending invoke createShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
 chaincodeInvokeCreateShip 0 1 0 2
 
+echo '==================END: Invoke transactions=================='
+
+echo '==================START: Query transactions=================='
+
+# Query Denmark ship certificate on peer0.dma.dk
+# Expected: Denmark MA could access Denmark ship certificates
+echo "Querying Denmark certificates on peer0.dma.dk ..."
+chaincodeQueryDenmarkShipCert 0 1
+
+# Query Estonia ship certificate on peer1.veeteedeamet.ee
+# Expected: Estonia MA could access Estonia ship certificates
+echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
+chaincodeQueryEstoniaShipCert 1 2
+
+# Query all Denmark ships on peer1.veeteedeamet.ee
+echo "Querying all Denmark ships on peer1.veeteedeamet.ee ..."
+chaincodeQueryAllDenmarkShip 1 2
+
+# Query all Estonia ships on peer0.dma.dk
+echo "Querying all Estonia ships on peer0.dma.dk ..."
+chaincodeQueryAllEstoniaShip 0 1
+
+echo '==================END: Query transactions=================='
 
 
 echo

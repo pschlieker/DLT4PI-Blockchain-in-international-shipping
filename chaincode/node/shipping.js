@@ -97,18 +97,18 @@ let Chaincode = class {
     }
 
     // === only Maritime Authority peers could access this method ===
-    async accessCtrlOnlyMA(stub) {
-        let cid = new ClientIdentity(stub);
-        let mspid = cid.getMSPID();
-        switch(mspid) {
-        case 'DmaMSP':
-            return true;
-        case 'VtaMSP':
-            return true;
-        default:
-            throw new Error('Wrong MSP');
-        }
-    }
+    // async accessCtrlOnlyMA(stub) {
+    //     let cid = new ClientIdentity(stub);
+    //     let mspid = cid.getMSPID();
+    //     switch(mspid) {
+    //     case 'DmaMSP':
+    //         return true;
+    //     case 'VtaMSP':
+    //         return true;
+    //     default:
+    //         throw new Error('Wrong MSP');
+    //     }
+    // }
 
     // ===========================================================================
     // initLedger - create 3 Marititme Authorities (Denmark, Estonia and Germany),
@@ -190,20 +190,20 @@ let Chaincode = class {
     // readPrivateShipCertificate - return certs in Bytes
     // ==========================================================================
     async readPrivateShipCertificate(stub, args) {
-        // e.g. '{"Args":["readPrivateShipCertificate", "5671234"]}'
+        // e.g. '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
-        if (args.length !== 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) ex: 1234567');
+        if (args.length !== 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) ex: Denmark, 9274848');
         }
+        let country = args[0];
+        let imo = args[1];
 
-        let imo = args[0];
-
-        // === Get the flag of the ship from chaincode state ===
-        let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
+        // === Check whether the ship exists from chaincode state ===
+        let maAsBytes = await stub.getState(country);
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!ship || ship.length <= 1) {
             throw new Error('Error occured retrieving the ship');
         }
-        let country = ship.flag;
 
         // === Get the ship certificate from chaincode state ===
         let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
@@ -215,7 +215,7 @@ let Chaincode = class {
     // createPrivateShipCertificate - create a ship certificate to the PDC
     // ==========================================================================
     async createPrivateShipCertificate(stub, args) {
-        // e.g. '{"Args":["createPrivateShipCertificate", "Denmark", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
+        // e.g. '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}'
         console.info('============= START : Creating Ship Certificate ===========');
         if (args.length !== 7) {
             throw new Error('Incorrect number of arguments. Expecting 7 argument (country, certName, certNum, imo, issueDate, expiryDate, certHash)');
@@ -225,8 +225,10 @@ let Chaincode = class {
         let imo = args[3];
         let newCert = new PrivateShipCertificate('privShipCert', country, args[1], args[2], imo, args[4], args[5], args[6]);
 
-        // === Get the flag of the ship from chaincode state ===
-        let ship = JSON.parse(this.queryShip(stub, [country, imo]));
+        // === Check whether the ship exists from chaincode state ===
+        let maAsBytes = await stub.getState(country);
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
+        console.log('Ship exists: ' + ship.toString());
         if (!ship || ship.length <= 1) {
             throw new Error('Error occured retrieving the ship');
         }
@@ -234,6 +236,7 @@ let Chaincode = class {
         // === Get the certificates of the ship from the state ===
         let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         let certs = JSON.parse(certsAsBytes);
+        console.log('List of certificates: ' + certs);
         // === Push the new certificates into the list of certificates ===
         certs.push(newCert);
 
@@ -242,7 +245,6 @@ let Chaincode = class {
         await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
         console.info('============= END : Creating Ship Certificate ===========');
-        return shim.success();
     }
 
     // ==========================================================================
@@ -251,23 +253,22 @@ let Chaincode = class {
     async createShip(stub, args) {
         // e.g. '{"Args":["createShip", "5671234", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}'
         console.info('============= START : Create Ship ===========');
-        if (this.accessCtrlOnlyMA(stub)) {
-            if (args.length !== 7) {
-                throw new Error('Incorrect number of arguments. Expecting 7');
-            }
-
-            // === Create ship object, get MA from the flag, add the newly created ship to shipList, save to state ===
-            let ship = new Ship('ship', args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
-            // TODO: check if the ship is created with the correct country (only "Denmark", "Estonia", "Germany")
-            let maAsBytes = await stub.getState(ship.country.toUpperCase());
-            let ma = JSON.parse(maAsBytes);
-            ma.addShips([ship]);
-
-            await stub.putState(ma.country.toUpperCase(), Buffer.from(JSON.stringify(ma)));
-            console.log(`Ship ${args[1]} created with ${ma.country}`);
+        if (args.length !== 7) {
+            throw new Error('Incorrect number of arguments. Expecting 7');
         }
+
+        // === Create ship object, get MA from the flag, add the newly created ship to shipList, save to state ===
+        let ship = new Ship('ship', args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        // TODO: check if the ship is created with the correct country (only "Denmark", "Estonia", "Germany")
+        let maAsBytes = await stub.getState(ship.flag);
+        let ma = JSON.parse(maAsBytes);
+        console.log(ma.shipList);
+        ma.shipList.push(ship);
+
+        await stub.putState(ma.country, Buffer.from(JSON.stringify(ma)));
+        console.log(`Ship ${args[1]} created with ${ma.country}`);
+        
         console.info('============= END : Create Ship ===========');
-        return shim.success();
     }
 
     // ==========================================================================
