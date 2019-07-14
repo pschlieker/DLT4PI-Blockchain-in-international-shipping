@@ -184,7 +184,6 @@ let Chaincode = class {
         }
         
         console.info('============= END : Initialize Ledger ===========');
-        return shim.success();
     }
 
     // ==========================================================================
@@ -216,21 +215,21 @@ let Chaincode = class {
     // createPrivateShipCertificate - create a ship certificate to the PDC
     // ==========================================================================
     async createPrivateShipCertificate(stub, args) {
-        // e.g. '{"Args":["createPrivateShipCertificate", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
+        // e.g. '{"Args":["createPrivateShipCertificate", "Denmark", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
         console.info('============= START : Creating Ship Certificate ===========');
-        if (args.length !== 5) {
-            throw new Error('Incorrect number of arguments. Expecting 5 argument (certName, certNum, imo, issueDate, expiryDate, certHash)');
+        if (args.length !== 7) {
+            throw new Error('Incorrect number of arguments. Expecting 7 argument (country, certName, certNum, imo, issueDate, expiryDate, certHash)');
         }
         // === Create the certificate ===
-        let imo = args[2];
-        let newCert = new PrivateShipCertificate('privShipCert', args[0], args[1], imo, args[3], args[4], args[5]);
+        let country = args[0];
+        let imo = args[3];
+        let newCert = new PrivateShipCertificate('privShipCert', country, args[1], args[2], imo, args[4], args[5], args[6]);
 
         // === Get the flag of the ship from chaincode state ===
-        let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
+        let ship = JSON.parse(this.queryShip(stub, [country, imo]));
         if (!ship || ship.length <= 1) {
             throw new Error('Error occured retrieving the ship');
         }
-        let country = ship.flag;
 
         // === Get the certificates of the ship from the state ===
         let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);

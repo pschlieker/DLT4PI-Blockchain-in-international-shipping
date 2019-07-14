@@ -117,10 +117,6 @@ echo "Querying chaincode on peer1.veeteedeamet.ee ..."
 chaincodeQuery 1 2
 
 # Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
-echo "Sending invoke transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-chaincodeInvokeInitLedger 0 1 0 2
-
-# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
 echo "Sending invoke createPrivateShipCertificate transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
 chaincodeInvokeCreateCert 0 1 0 2
 
