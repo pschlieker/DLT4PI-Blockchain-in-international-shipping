@@ -169,51 +169,6 @@ upgradeChaincode() {
   echo
 }
 
-chaincodeQuery() {
-  PEER=$1
-  ORG=$2
-  setGlobals $PEER $ORG
-  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
-  local rc=1
-  local starttime=$(date +%s)
-
-  # continue to poll
-  # we either get a successful response, or reach TIMEOUT
-  while
-    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
-  do
-    sleep $DELAY
-    echo "Attempting to queryAllShipsByCountry peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
-    set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryAllShipsByCountry", "Denmark"]}' >&log.txt
-    res=$?
-    set +x
-    echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
-    set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryShip", "Denmark", "9166778"]}' >&log.txt
-    res=$?
-    set +x
-    echo "Attempting to queryMaritimeAuthority peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
-    set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryMaritimeAuthority", "Estonia"]}' >&log.txt
-    res=$?
-    set +x
-    echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
-    set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "9166778"]}' >&log.txt
-    res=$?
-    set +x
-    echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
-    set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "9148843"]}' >&log.txt
-    res=$?
-    set +x
-  done
-  echo
-  cat log.txt
-  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
-}
-
 # fetchChannelConfig <channel_id> <output_json>
 # Writes the current channel config for a given channel to a JSON file
 fetchChannelConfig() {
@@ -298,6 +253,162 @@ parsePeerConnectionParameters() {
   PEERS="$(echo -e "$PEERS" | sed -e 's/^[[:space:]]*//')"
 }
 
+# chaincodeQueryDenmarkShipCert <peer> <org> ...
+chaincodeQueryDenmarkShipCert() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
+# chaincodeQueryEstoniaShipCert <peer> <org> ...
+chaincodeQueryEstoniaShipCert() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
+# chaincodeQueryDenmarkShip <peer> <org> ...
+chaincodeQueryDenmarkShip() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryShip", "Denmark", "9166778"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
+# chaincodeQueryEstoniaShip <peer> <org> ...
+chaincodeQueryEstoniaShip() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryShip", "Estonia", "9762687"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
+# chaincodeQueryAllDenmarkShip <peer> <org> ...
+chaincodeQueryAllDenmarkShip() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryAllShipsByCountry", "Denmark"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
+# chaincodeQueryAllEstoniaShip <peer> <org> ...
+chaincodeQueryAllEstoniaShip() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryAllShipsByCountry", "Estonia"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
 # chaincodeInvokeInitLedger <peer> <org> ...
 # Accepts as many peer/org pairs as desired and requests endorsement from each
 chaincodeInvokeInitLedger() {
@@ -325,9 +436,9 @@ chaincodeInvokeInitLedger() {
   echo
 }
 
-# chaincodeInvokeCreateCert <peer> <org> ...
+# chaincodeInvokeCreateDenmarkCert <peer> <org> ...
 # Accepts as many peer/org pairs as desired and requests endorsement from each
-chaincodeInvokeCreateCert() {
+chaincodeInvokeCreateDenmarkCert() {
   parsePeerConnectionParameters $@
   res=$?
   verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
@@ -343,6 +454,33 @@ chaincodeInvokeCreateCert() {
   else
     set -x
     peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction chaincodeInvokeCreateCert successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
+# chaincodeInvokeCreateEstoniaCert <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeCreateEstoniaCert() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
     res=$?
     set +x
   fi
@@ -370,6 +508,33 @@ chaincodeInvokeCreateShip() {
   else
     set -x
     peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createShip", "001122", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}' >&log.txt
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction chaincodeInvokeCreateShip successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
+# chaincodeInvokeVerifyLocation <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeVerifyLocation() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
     res=$?
     set +x
   fi

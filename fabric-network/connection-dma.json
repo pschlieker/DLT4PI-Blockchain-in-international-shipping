@@ -2,7 +2,7 @@
 	"name": "DanishMaritimeAuthority",
 	"version": "1.0.0",
 	"client": {
-		"organization": "Dma",
+		"organization": "Org1",
 		"connection": {
 			"timeout": {
 				"peer": {
@@ -17,7 +17,10 @@
 			"peers": [
 				"peer0.dma.dk",
 				"peer1.dma.dk"
-			]
+			],
+      "certificateAuthorities": [
+        "ca.dma.dk"
+      ]
 		}
 	},
 	"peers": {
@@ -39,5 +42,11 @@
 				"ssl-target-name-override": "peer1.dma.dk"
 			}
 		}
-	}
+	},
+  "certificateAuthorities": {
+    "ca.dma.dk": {
+      "url": "https://localhost:7054",
+      "caName": "ca.dma.dk"
+    }
+  }
 }

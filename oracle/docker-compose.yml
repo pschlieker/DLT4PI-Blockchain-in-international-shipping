@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  oracle:
+    image: php:7.2-apache
+    volumes:
+    - "./html:/var/www/html"
+    ports:
+    - "9001:80"
