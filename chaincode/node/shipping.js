@@ -15,9 +15,6 @@ class MaritimeAuthority {
         this.borders = borders;
         this.shipList = [];
     }
-    getShipList() {
-        return this.shipList;
-    }
     addShips(shipList) {
         return Array.prototype.push.apply(this.shipList, shipList);
     }
@@ -139,15 +136,19 @@ let Chaincode = class {
         maritimeAuthorities[1].addShips(estoniaShips);
 
         // === Save MaritimeAuthorities to state ===
-        for (let i = 0; i < maritimeAuthorities.length; i++) {
-            await stub.putState(maritimeAuthorities[i].country, Buffer.from(JSON.stringify(maritimeAuthorities[i])));
-            console.info('Added <--> ' + maritimeAuthorities[i]);
+        try {
+            await stub.putState('Denmark', Buffer.from(JSON.stringify(maritimeAuthorities[0])));
+            console.info('Added <--> Denmark MA');
+            await stub.putState('Estonia', Buffer.from(JSON.stringify(maritimeAuthorities[1])));
+            console.info('Added <--> Estonia MA');
+        } catch (err) {
+            throw new Error('Cannot initialize MaritimeAuthority: ' + err)
         }
 
         // === Create PrivateShipCertificates private data collections, save to state ===
         let PrivateDenmarkShipCertificates = [
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
-            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1)), '',
+            new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9166778', new Date(2019, 1, 1), new Date(2021, 1, 1), ''),
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9274848', new Date(2018, 2, 2), new Date(2020, 2, 2), ''),
             new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9274848', new Date(2019, 2, 2), new Date(2021, 2, 2), '')
         ];
@@ -159,21 +160,29 @@ let Chaincode = class {
         ];
 
         // === Save PrivateDenmarkShipCertificates to state ===
-        for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
-            let imo = i.imo;
-            let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
-            await stub.PutPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
-            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        try {
+            for (let i = 0; i < PrivateDenmarkShipCertificates.length; i = i+2) {
+                let imo = PrivateDenmarkShipCertificates[i].imo.toString();
+                let certAsBytes = Buffer.from(JSON.stringify([PrivateDenmarkShipCertificates[i], PrivateDenmarkShipCertificates[i + 1]]));
+                await stub.putPrivateData('collectionDenmarkShipCertificates', imo, certAsBytes);
+                console.info(`Added <--> ${PrivateDenmarkShipCertificates[i].certName} and ${PrivateDenmarkShipCertificates[i + 1].certName} to Ship ${PrivateDenmarkShipCertificates[i].imo} and ${PrivateDenmarkShipCertificates[i + 1].imo}`);
+            }
+        } catch (err) {
+            throw new Error('Cannot initialize PrivateDenmarkShipCertificates: ' + err)
         }
 
         // === Save PrivateEstoniaShipCertificates to state ===
-        for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
-            let imo = i.imo;
-            let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
-            await stub.PutPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
-            console.info(`Added <--> ${i.certName} and ${(i+1).certName} to Ship ${i.imo} and ${(i+1).imo}`);
+        try{
+            for (let i = 0; i < PrivateEstoniaShipCertificates.length; i = i+2) {
+                let imo = PrivateEstoniaShipCertificates[i].imo.toString();
+                let certAsBytes = Buffer.from(JSON.stringify([PrivateEstoniaShipCertificates[i], PrivateEstoniaShipCertificates[i + 1]]));
+                await stub.putPrivateData('collectionEstoniaShipCertificates', imo, certAsBytes);
+                console.info(`Added <--> ${PrivateEstoniaShipCertificates[i].certName} and ${PrivateEstoniaShipCertificates[i + 1].certName} to Ship ${PrivateEstoniaShipCertificates[i].imo} and ${PrivateEstoniaShipCertificates[i + 1].imo}`);
+            }
+        } catch (err) {
+            throw new Error('Cannot initialize PrivateEstoniaShipCertificates: ' + err)
         }
-
+        
         console.info('============= END : Initialize Ledger ===========');
     }
 
@@ -197,42 +206,43 @@ let Chaincode = class {
         let country = ship.flag;
 
         // === Get the ship certificate from chaincode state ===
-        let certs = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
-        return certs;
+        return certsAsBytes;
     }
 
     // ==========================================================================
     // createPrivateShipCertificate - create a ship certificate to the PDC
     // ==========================================================================
     async createPrivateShipCertificate(stub, args) {
-        // e.g. '{"Args":["createPrivateShipCertificate", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
+        // e.g. '{"Args":["createPrivateShipCertificate", "Denmark", "Cargo ship safety certificate", "567890", "9166778", "2010-01-01", "2020-12-31", "IPFS_Hash_to_Cert"]}'
         console.info('============= START : Creating Ship Certificate ===========');
-        if (args.length !== 5) {
-            throw new Error('Incorrect number of arguments. Expecting 5 argument (certName, certNum, imo, issueDate, expiryDate, certHash)');
+        if (args.length !== 7) {
+            throw new Error('Incorrect number of arguments. Expecting 7 argument (country, certName, certNum, imo, issueDate, expiryDate, certHash)');
         }
         // === Create the certificate ===
-        let imo = args[2];
-        let newCert = new PrivateShipCertificate('privShipCert', args[0], args[1], imo, args[3], args[4], args[5]);
+        let country = args[0];
+        let imo = args[3];
+        let newCert = new PrivateShipCertificate('privShipCert', country, args[1], args[2], imo, args[4], args[5], args[6]);
 
         // === Get the flag of the ship from chaincode state ===
-        let ship = JSON.parse(this.queryShip(stub, [imo]).toString());
+        let ship = JSON.parse(this.queryShip(stub, [country, imo]));
         if (!ship || ship.length <= 1) {
             throw new Error('Error occured retrieving the ship');
         }
-        let country = ship.flag;
 
         // === Get the certificates of the ship from the state ===
-        let certsAsBytes = await stub.GetPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         let certs = JSON.parse(certsAsBytes);
         // === Push the new certificates into the list of certificates ===
         certs.push(newCert);
 
         // === Save PrivateDenmarkShipCertificates to state ===
         certsAsBytes = Buffer.from(JSON.stringify(certs));
-        await stub.PutPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
+        await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
         console.info('============= END : Creating Ship Certificate ===========');
+        return shim.success();
     }
 
     // ==========================================================================
@@ -257,26 +267,31 @@ let Chaincode = class {
             console.log(`Ship ${args[1]} created with ${ma.country}`);
         }
         console.info('============= END : Create Ship ===========');
+        return shim.success();
     }
 
     // ==========================================================================
-    // queryShip - return the queried ship by country from the state
+    // queryShip - return the queried ship by imo from the state
     // ==========================================================================
     async queryShip(stub, args) {
-        // e.g. '{"Args":["queryShip", "5671234"]}'
+        // e.g. '{"Args":["queryShip", "Denmark", "9166778"]}'
         console.info('============= START : Query Ship ===========');
-        if (args.length !== 1) {
-            throw new Error('Incorrect number of arguments. Expecting 1 argument (imo number) eg: 1234567');
+        if (args.length !== 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) eg: Denmark, 9166778');
         }
 
-        // === Query ship object ===
-        let imo = args[0];
+        // === Get MA from the state ===
+        let country = args[0];
+        let imo = args[1];
 
-        let shipAsBytes = await stub.getState(imo);
-        if (!shipAsBytes || shipAsBytes.toString().length <= 0) {
-            throw new Error(imo + ' does not exist: ');
+        let maAsBytes = await stub.getState(country);
+        console.log(maAsBytes.toString());
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
         }
-        console.log(shipAsBytes.toString());
+        console.log(ship.toString());
+        let shipAsBytes = Buffer.from(JSON.stringify(ship));
         console.info('============= END : Query Ship ===========');
         return shipAsBytes;
     }
@@ -295,13 +310,15 @@ let Chaincode = class {
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist.');
         }
-        console.log(maAsBytes.toString());
-        let result = JSON.parse(maAsBytes).getShipList();
+        console.log('Successful getting maAsBytes');
+        let result = JSON.parse(maAsBytes).shipList;
+        console.log('shiplist: ' + result);
         if (!result || result.toString().length <= 0) {
             throw new Error(`ShipList of ${country} does not exist.`);
         }
+        let resultAsBytes = Buffer.from(JSON.stringify(result));
         console.info('============= END : Query All Ships by Country ===========');
-        return result;
+        return resultAsBytes;
     }
 
     // ==========================================================================
@@ -351,10 +368,10 @@ let Chaincode = class {
             let shipLng = body.entries[0].lng;
             // check if the location is within the country's maritime borders
             if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
-                console.info('============= Verify Location ===========');
-                return true;
+                console.info('============= END : Verify Location ===========');
+                return shim.success(Buffer.from('true'));
             } else {
-                return false;
+                return shim.success(Buffer.from('false'));
             }
         });
     }
