@@ -15,11 +15,12 @@ volumes:
 networks:
   byfn:
 services:
-  ca0:
+  ca.dma.dk:
+    container_name: ca.dma.dk
     image: hyperledger/fabric-ca:$IMAGE_TAG
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_NAME=ca-org1
+      - FABRIC_CA_SERVER_CA_NAME=ca-dma
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.dma.dk-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY
@@ -28,15 +29,15 @@ services:
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.dma.dk-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -b admin:adminpw -d'
     volumes:
       - ./crypto-config/peerOrganizations/dma.dk/ca/:/etc/hyperledger/fabric-ca-server-config
-    container_name: ca_peerOrg1
     networks:
       - byfn
 
-  ca1:
+  ca.veeteedeamet.ee:
+    container_name: ca.veeteedeamet.ee
     image: hyperledger/fabric-ca:$IMAGE_TAG
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
-      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+      - FABRIC_CA_SERVER_CA_NAME=ca-vta
       - FABRIC_CA_SERVER_TLS_ENABLED=true
       - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.veeteedeamet.ee-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY
@@ -45,7 +46,6 @@ services:
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.veeteedeamet.ee-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -b admin:adminpw -d'
     volumes:
       - ./crypto-config/peerOrganizations/veeteedeamet.ee/ca/:/etc/hyperledger/fabric-ca-server-config
-    container_name: ca_peerOrg2
     networks:
       - byfn
 
@@ -86,5 +86,40 @@ services:
     extends:
       file:  base/docker-compose-base.yaml
       service: peer1.veeteedeamet.ee
+    networks:
+      - byfn
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      #- FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.dma.dk:7051
+      - CORE_PEER_LOCALMSPID=DmaMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/users/Admin@dma.dk/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    depends_on:
+      - orderer.emsa.europa.eu
+      - peer0.dma.dk
+      - peer1.dma.dk
+      - peer0.veeteedeamet.ee
+      - peer1.veeteedeamet.ee
     networks:
       - byfn

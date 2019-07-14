@@ -2,7 +2,7 @@
 	"name": "EstonianMaritimeAuthority",
 	"version": "1.0.0",
 	"client": {
-		"organization": "Vta",
+		"organization": "Org1",
 		"connection": {
 			"timeout": {
 				"peer": {
@@ -17,7 +17,10 @@
 			"peers": [
 				"peer0.veeteedeamet.ee",
 				"peer1.veeteedeamet.ee"
-			]
+			],
+      "certificateAuthorities": [
+        "ca.veeteedeamet.ee"
+      ]
 		}
 	},
 	"peers": {
@@ -39,5 +42,11 @@
 				"ssl-target-name-override": "peer1.veeteedeamet.ee"
 			}
 		}
-	}
+	},
+  "certificateAuthorities": {
+    "ca.veeteedeamet.ee": {
+      "url": "https://localhost:8054",
+      "caName": "ca.veeteedeamet.ee"
+    }
+  }
 }
