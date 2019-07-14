@@ -358,8 +358,13 @@ let Chaincode = class {
         let country = args[1];
 
         // Get the country's borders
-        let ma = await JSON.parse(this.queryMaritimeAuthority(stub, country));
-        let borders = ma.borders;
+        
+        let maAsBytes = await stub.getState(country);
+        console.log(maAsBytes.toString());
+        let borders = JSON.parse(maAsBytes).borders;
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
+        }
 
         // TODO: connect to external api
         let api = `http://172.31.44.43:9001/${imo}`;
