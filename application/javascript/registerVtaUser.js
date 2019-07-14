@@ -14,7 +14,7 @@ async function main() {
     try {
 
         // Create a new file system based wallet for managing identities.
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(process.cwd(), 'vta', 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -42,11 +42,11 @@ async function main() {
         const adminIdentity = gateway.getCurrentIdentity();
 
         // Register the user, enroll the user, and import the new identity into the wallet.
-        const secret = await ca.register({ affiliation: 'vta.psco', enrollmentID: 'VtaUser1', role: 'client' }, adminIdentity);
+        const secret = await ca.register({ affiliation: 'vta.port1', enrollmentID: 'VtaUser1', role: 'client' }, adminIdentity);
         const enrollment = await ca.enroll({ enrollmentID: 'VtaUser1', enrollmentSecret: secret });
         const userIdentity = X509WalletMixin.createIdentity('VtaMSP', enrollment.certificate, enrollment.key.toBytes());
         await wallet.import('VtaUser1', userIdentity);
-        console.log('Successfully registered and enrolled admin user "VtaUser1" and imported it into the wallet');
+        console.log('Successfully registered and enrolled user "VtaUser1" and imported it into the wallet');
 
     } catch (error) {
         console.error(`Failed to register user "VtaUser1": ${error}`);
