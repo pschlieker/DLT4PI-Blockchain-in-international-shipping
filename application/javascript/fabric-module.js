@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
-const walletPath = path.join(process.cwd(), 'wallet');
+const walletPath = path.join(process.cwd(), 'dma','wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
@@ -43,7 +43,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
@@ -82,7 +82,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
@@ -199,7 +199,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
@@ -244,7 +244,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Submit the specified transaction.
@@ -290,7 +290,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Submit the specified transaction.
@@ -332,7 +332,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'shipping';
+            const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
             // Get the MSPid of the logged in identity (i.e. the requesting authority)
