@@ -123,3 +123,11 @@ services:
       - peer1.veeteedeamet.ee
     networks:
       - byfn
+
+  oracle:
+    image: php:7.2-apache
+    container_name: oracle
+    volumes:
+    - "../oracle/html:/var/www/html"
+    networks: 
+     - byfn
