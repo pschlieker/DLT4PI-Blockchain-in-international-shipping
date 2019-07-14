@@ -1,3 +1,10 @@
+
+fabric-network/channel-artifacts/
+
+fabric-network/crypto-config/
+
+fabric-network/docker-compose-e2e\.yaml
+
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 # compiled output
