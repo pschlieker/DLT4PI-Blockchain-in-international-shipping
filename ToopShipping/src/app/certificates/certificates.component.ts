@@ -1,0 +1,72 @@
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import * as axios from 'axios';
+
+@Component({
+  selector: 'app-certificates',
+  templateUrl: './certificates.component.html',
+  styleUrls: ['./certificates.component.css']
+})
+export class CertificatesComponent implements OnInit {
+  public shipId = '';
+  public selectedCountry = '';
+  public newCertificate: any = {};
+  public certificateList: any = [
+    {certificateId: '1', certificateName: 'Certificate1'},
+    {certificateId: '2', certificateName: 'Certificate2'},
+    {certificateId: '3', certificateName: 'Certificate3'},
+  ];
+
+
+  constructor(private route: ActivatedRoute, private toastr: ToastrService) {
+    this.route.params.subscribe(params => {
+      if (params.country && params.country !== 'undefined') {
+        this.selectedCountry = params.country;
+        this.shipId = params.shipId;
+      } else {
+        this.selectedCountry = undefined;
+        this.shipId = undefined;
+      }
+    });
+  }
+
+  ngOnInit() {
+  }
+
+  uploadFile(event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+      this.newCertificate.data = files[0];
+    }
+  }
+
+  downloadCertificate() {
+    const pdfBlob = new Blob([this.newCertificate.data], {type: 'application/pdf'});
+    const fileURL = URL.createObjectURL(pdfBlob);
+    window.open(fileURL, '_blank');
+  }
+
+  deleteCertificate(certificateId) {
+    axios.default.delete('https://jsonplaceholder.typicode.com/todos/1')
+      .then((response) => {
+        // handle success
+        this.removeCertificateFromList(certificateId)
+        this.toastr.success('Certificate deleted successfully!');
+      })
+      .catch((error) => {
+        // handle error
+        this.toastr.error('Unable to delete certificate. Try again.');
+        console.log(error);
+      });
+  }
+
+  removeCertificateFromList(certificateId) {
+    const index = this.certificateList.findIndex(certificate => certificate.certificateId === certificateId);
+    if (index !== -1) {
+      this.certificateList.splice(index, 1);
+    }
+
+  }
+
+}

@@ -1,0 +1,46 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+ToopShipping/dist
+ToopShipping/tmp
+ToopShipping/out-tsc
+# Only exists if Bazel was run
+/bazel-out
+
+# dependencies
+ToopShipping/node_modules
+
+# profiling files
+chrome-profiler-events.json
+speed-measure-plugin.json
+
+# IDEs and editors
+ToopShipping/.idea
+ToopShipping/.project
+.classpath
+.c9/
+*.launch
+ToopShipping/.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# misc
+ToopShipping/.sass-cache
+ToopShipping/connect.lock
+ToopShipping/coverage
+ToopShipping/libpeerconnection.log
+ToopShipping/npm-debug.log
+ToopShipping/yarn-error.log
+ToopShipping/testem.log
+ToopShipping/typings
+
+# System Files
+.DS_Store
+Thumbs.db
