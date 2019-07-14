@@ -13,9 +13,9 @@ export class CertificatesComponent implements OnInit {
   public selectedCountry = '';
   public newCertificate: any = {};
   public certificateList: any = [
-    {certificateId: '1', certificateName: 'Certificate1'},
-    {certificateId: '2', certificateName: 'Certificate2'},
-    {certificateId: '3', certificateName: 'Certificate3'},
+    {certificateId: '1', certificateName: 'Dangerous cargo carrying certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
+    {certificateId: '2', certificateName: 'Cargo ship safety certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
+    {certificateId: '3', certificateName: 'International oil prevention certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
   ];
 
 
@@ -67,6 +67,10 @@ export class CertificatesComponent implements OnInit {
       this.certificateList.splice(index, 1);
     }
 
+  }
+
+  viewCertificate(fileURL) {
+    window.open(fileURL, '_blank');
   }
 
 }

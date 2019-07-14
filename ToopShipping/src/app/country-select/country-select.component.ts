@@ -12,7 +12,7 @@ export class CountrySelectComponent implements OnInit {
     'France',
     'Spain',
     'Estonia',
-    'Denmark'
+    'Denmark',
   ];
 
   constructor() { }

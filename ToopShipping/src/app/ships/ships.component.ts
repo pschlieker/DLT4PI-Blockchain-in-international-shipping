@@ -13,9 +13,10 @@ export class ShipsComponent implements OnInit {
   public testObj: any = {};
   public newShip: any = {shipId: '', shipName: '', shipCountry: ''};
   public shipList: any = [
-    {shipId: '1', shipName: 'Ship1', shipCountry: 'Germany'},
-    {shipId: '2', shipName: 'Ship2', shipCountry: 'Pakistan'},
+    {shipId: '1', shipName: 'Ship1', shipCountry: 'Denmark'},
+    {shipId: '2', shipName: 'Ship2', shipCountry: 'Germany'},
     {shipId: '3', shipName: 'Ship3', shipCountry: 'Italy'},
+    {shipId: '4', shipName: 'Ship1', shipCountry: 'Estonia'},
   ];
 
   constructor(private route: ActivatedRoute, private router: Router, private toastr: ToastrService) {
@@ -46,6 +47,9 @@ export class ShipsComponent implements OnInit {
     if (ship.shipCountry === this.selectedCountry) {
       const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId;
       this.router.navigateByUrl(url);
+    } else if (this.checkPermission(ship.shipCountry, this.selectedCountry) == true) {
+      const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId;
+      this.router.navigateByUrl(url);
     } else {
       // TODO: Check for the consensus
       this.toastr.error('You do not have permission to access this ships certificates');
@@ -63,6 +67,14 @@ export class ShipsComponent implements OnInit {
         // handle error
         console.log(error);
       });
+  }
+
+  checkPermission(shipCountry, destinationCountry) {
+    if (shipCountry == "Denmark" && destinationCountry == "Estonia") {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }
