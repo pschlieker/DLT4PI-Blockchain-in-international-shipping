@@ -1,0 +1,16 @@
+.button-margin {
+  margin-left: 2%;
+  margin-right: 2%;
+}
+
+#inputGroupFile01 {
+  cursor: pointer;
+}
+
+.custom-file-label {
+  overflow: hidden;
+}
+
+.heading-margin {
+  margin: 2%;
+}

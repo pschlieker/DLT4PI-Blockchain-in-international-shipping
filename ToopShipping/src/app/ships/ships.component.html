@@ -1,0 +1,120 @@
+<h3 class="heading-margin" *ngIf="selectedCountry !== undefined">You have selected {{selectedCountry}}</h3>
+<h3 class="heading-margin" *ngIf="selectedCountry === undefined">Please choose a country first!</h3>
+
+<div *ngIf="selectedCountry !== undefined">
+<!-- Button trigger modal -->
+  <button type="button" class="btn-sm btn-primary button-margin" data-toggle="modal" data-target="#addShipModal">
+    Add a ship
+  </button>
+
+  <button type="button" class="btn-sm btn-primary button-margin" data-toggle="modal" data-target="#searchShipModal">
+    Search ships
+  </button>
+
+  <!--<button (click)="testFunc()"> Testing api </button>-->
+  <div class="row"></div>
+  <!--Ship list table -->
+  <table class="table table-class">
+    <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Name</th>
+      <th scope="col">Country</th>
+      <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ship of shipList">
+        <td scope="col">{{ship.shipId}}</td>
+        <td scope="col">{{ship.shipName}}</td>
+        <td scope="col">{{ship.shipCountry}}</td>
+        <td scope="col"><button type="button" class="btn-sm btn-primary" (click)="viewShipDetails(ship)">
+          View Certificates</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+    <!--Add Ship Modal -->
+  <div class="modal fade" id="addShipModal" tabindex="-1" role="dialog" aria-labelledby="addShipTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addShipTitle">Add Ship</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipId">Ship Id</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipId"
+                   (keyup)="updateShipObject('shipId', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipName">Ship Name</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipName"
+                   (keyup)="updateShipObject('shipName', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipCountry">Ship Country</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipCountry" [value]="newShip.shipCountry" disabled>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="saveShip()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Ship Modal -->
+  <div class="modal fade" id="searchShipModal" tabindex="-1" role="dialog" aria-labelledby="searchShipTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="searchShipTitle">Add Ship</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="searchValue">Ship Id</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipId"
+                   (keyup)="updateShipObject('shipId', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipName">Ship Name</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipName"
+                   (keyup)="updateShipObject('shipName', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipCountry">Ship Country</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipCountry" [value]="newShip.shipCountry" disabled>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="saveShip()">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
