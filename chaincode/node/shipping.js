@@ -349,7 +349,7 @@ let Chaincode = class {
     // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
     // ==========================================================================
     async verifyLocation(stub, args) {
-        // e.g. '{"Args":["verifyLocation", "5671234", "Denmark"]}'
+        // e.g. '{"Args":["verifyLocation", "9166778", "Denmark"]}'
         console.info('============= START : Verify Location ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (imo, country)');
@@ -362,7 +362,7 @@ let Chaincode = class {
         let borders = ma.borders;
 
         // TODO: connect to external api
-        let api = `http://192.168.179.58:9001/${imo}`;
+        let api = `http://172.31.44.43:9001/${imo}`;
         request(api, { json: true }, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
             let shipLat = body.entries[0].lat;

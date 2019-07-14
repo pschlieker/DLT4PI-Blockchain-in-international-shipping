@@ -194,6 +194,10 @@ chaincodeQueryAllEstoniaShip 0 1
 
 echo '==================END: Query transactions=================='
 
+# Invoke verifyLocation on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke verifyLocation transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvokeVerifyLocation 0 1 0 2
+
 
 echo
 echo "========= All GOOD, BYFN execution completed =========== "

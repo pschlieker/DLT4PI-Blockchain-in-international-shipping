@@ -516,3 +516,30 @@ chaincodeInvokeCreateShip() {
   echo "===================== Invoke transaction chaincodeInvokeCreateShip successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
   echo
 }
+
+# chaincodeInvokeVerifyLocation <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeVerifyLocation() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction chaincodeInvokeCreateShip successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
