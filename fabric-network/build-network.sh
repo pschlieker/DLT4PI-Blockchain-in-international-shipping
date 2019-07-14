@@ -198,7 +198,7 @@ function networkUp() {
 
   # now run the end to end script
   echo "Debug: Collections path: $COLLECTIONS_PATH"
-  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH
+  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH $SKIP_QUERIES
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Test failed"
     exit 1
@@ -542,7 +542,7 @@ else
   exit 1
 fi
 
-while getopts "h?c:t:d:f:s:l:i:o:v" opt; do
+while getopts "h?c:t:d:f:s:l:i:o:v:q" opt; do
   case "$opt" in
   h | \?)
     printHelp
@@ -574,6 +574,9 @@ while getopts "h?c:t:d:f:s:l:i:o:v" opt; do
     ;;
   v)
     VERBOSE=true
+    ;;
+  q)
+    SKIP_QUERIES=true
     ;;
   esac
 done
