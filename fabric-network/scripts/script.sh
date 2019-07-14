@@ -104,17 +104,31 @@ echo "Instantiating chaincode on peer0.veeteedeamet.ee ..."
 echo "Debug: Collections path: $COLLECTIONS_PATH"
 instantiateChaincode 0 2
 
-# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
-echo "Sending invoke transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-chaincodeInvoke 0 1 0 2
+# Initialize chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke initLedger transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvokeInitLedger 0 1 0 2
 
 # Query chaincode on peer0.dma.dk
 echo "Querying chaincode on peer0.dma.dk ..."
-chaincodeQuery 0 1 100
+chaincodeQuery 0 1
 
-# Query on chaincode on peer1.org2, check if the result is 90
+# Query on chaincode on peer1.org2
 echo "Querying chaincode on peer1.veeteedeamet.ee ..."
-chaincodeQuery 1 2 90
+chaincodeQuery 1 2
+
+# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvokeInitLedger 0 1 0 2
+
+# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke createPrivateShipCertificate transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvokeCreateCert 0 1 0 2
+
+# Invoke chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
+echo "Sending invoke createShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+chaincodeInvokeCreateShip 0 1 0 2
+
+
 
 echo
 echo "========= All GOOD, BYFN execution completed =========== "

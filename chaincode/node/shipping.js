@@ -138,9 +138,9 @@ let Chaincode = class {
         // === Save MaritimeAuthorities to state ===
         try {
             await stub.putState('Denmark', Buffer.from(JSON.stringify(maritimeAuthorities[0])));
-            console.info('Added <--> Denmark');
+            console.info('Added <--> Denmark MA');
             await stub.putState('Estonia', Buffer.from(JSON.stringify(maritimeAuthorities[1])));
-            console.info('Added <--> Estonia');
+            console.info('Added <--> Estonia MA');
         } catch (err) {
             throw new Error('Cannot initialize MaritimeAuthority: ' + err)
         }
@@ -184,6 +184,7 @@ let Chaincode = class {
         }
         
         console.info('============= END : Initialize Ledger ===========');
+        return shim.success();
     }
 
     // ==========================================================================
@@ -206,9 +207,9 @@ let Chaincode = class {
         let country = ship.flag;
 
         // === Get the ship certificate from chaincode state ===
-        let certs = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
-        return certs;
+        return certsAsBytes;
     }
 
     // ==========================================================================
@@ -242,6 +243,7 @@ let Chaincode = class {
         await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
         console.info('============= END : Creating Ship Certificate ===========');
+        return shim.success();
     }
 
     // ==========================================================================
@@ -266,6 +268,7 @@ let Chaincode = class {
             console.log(`Ship ${args[1]} created with ${ma.country}`);
         }
         console.info('============= END : Create Ship ===========');
+        return shim.success();
     }
 
     // ==========================================================================
@@ -283,14 +286,15 @@ let Chaincode = class {
         let imo = args[1];
 
         let maAsBytes = await stub.getState(country);
+        console.log(maAsBytes.toString());
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
         }
-        console.log(maAsBytes.toString());
-        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         console.log(ship.toString());
+        let shipAsBytes = Buffer.from(JSON.stringify(ship));
         console.info('============= END : Query Ship ===========');
-        return ship;
+        return shipAsBytes;
     }
 
     // ==========================================================================
@@ -307,13 +311,15 @@ let Chaincode = class {
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist.');
         }
-        console.log(maAsBytes.toString());
+        console.log('Successful getting maAsBytes');
         let result = JSON.parse(maAsBytes).shipList;
+        console.log('shiplist: ' + result);
         if (!result || result.toString().length <= 0) {
             throw new Error(`ShipList of ${country} does not exist.`);
         }
+        let resultAsBytes = Buffer.from(JSON.stringify(result));
         console.info('============= END : Query All Ships by Country ===========');
-        return result;
+        return resultAsBytes;
     }
 
     // ==========================================================================
@@ -363,10 +369,10 @@ let Chaincode = class {
             let shipLng = body.entries[0].lng;
             // check if the location is within the country's maritime borders
             if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
-                console.info('============= Verify Location ===========');
-                return true;
+                console.info('============= END : Verify Location ===========');
+                return shim.success(Buffer.from('true'));
             } else {
-                return false;
+                return shim.success(Buffer.from('false'));
             }
         });
     }
