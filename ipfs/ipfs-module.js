@@ -4,7 +4,7 @@ const fs = require('fs');
 const crypto = require('./crypto.js');
 
 module.exports = {
-    uploadFile(filePath) {
+    async uploadFile(filePath) {
         try {
             let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
             // Creating buffer for ipfs function to add file to the system
@@ -28,7 +28,7 @@ module.exports = {
         }
     },
 
-    retrieveFile(hash, password) {
+    async retrieveFile(hash, password) {
         try {
             let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
             // Retrieve file
