@@ -10,6 +10,7 @@ import * as axios from 'axios';
 })
 export class CertificatesComponent implements OnInit {
   public shipId = '';
+  public shipCountry = '';
   public selectedCountry = '';
   public newCertificate: any = {};
   public certificateList: any = [
@@ -24,6 +25,7 @@ export class CertificatesComponent implements OnInit {
       if (params.country && params.country !== 'undefined') {
         this.selectedCountry = params.country;
         this.shipId = params.shipId;
+        this.shipCountry = params.shipCountry;
       } else {
         this.selectedCountry = undefined;
         this.shipId = undefined;
@@ -47,18 +49,23 @@ export class CertificatesComponent implements OnInit {
     window.open(fileURL, '_blank');
   }
 
+  // deleteCertificate(certificateId) {
+  //   axios.default.delete('https://jsonplaceholder.typicode.com/todos/1')
+  //     .then((response) => {
+  //       // handle success
+  //       this.removeCertificateFromList(certificateId)
+  //       this.toastr.success('Certificate deleted successfully!');
+  //     })
+  //     .catch((error) => {
+  //       // handle error
+  //       this.toastr.error('Unable to delete certificate. Try again.');
+  //       console.log(error);
+  //     });
+  // }
+
   deleteCertificate(certificateId) {
-    axios.default.delete('https://jsonplaceholder.typicode.com/todos/1')
-      .then((response) => {
-        // handle success
-        this.removeCertificateFromList(certificateId)
-        this.toastr.success('Certificate deleted successfully!');
-      })
-      .catch((error) => {
-        // handle error
-        this.toastr.error('Unable to delete certificate. Try again.');
-        console.log(error);
-      });
+    this.removeCertificateFromList(certificateId)
+    this.toastr.success('Certificate deleted successfully!');
   }
 
   removeCertificateFromList(certificateId) {

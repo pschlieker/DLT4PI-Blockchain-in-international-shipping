@@ -45,10 +45,10 @@ export class ShipsComponent implements OnInit {
 
   viewShipDetails(ship) {
     if (ship.shipCountry === this.selectedCountry) {
-      const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId;
+      const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId + '/' + ship.shipCountry;
       this.router.navigateByUrl(url);
     } else if (this.checkPermission(ship.shipCountry, this.selectedCountry) == true) {
-      const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId;
+      const url = '/certificates/' + this.selectedCountry + '/' + ship.shipId + '/' + ship.shipCountry;
       this.router.navigateByUrl(url);
     } else {
       // TODO: Check for the consensus
@@ -70,7 +70,7 @@ export class ShipsComponent implements OnInit {
   }
 
   checkPermission(shipCountry, destinationCountry) {
-    if (shipCountry == "Denmark" && destinationCountry == "Estonia") {
+    if (shipCountry == "Estonia" && destinationCountry == "Denmark") {
       return true;
     } else {
       return false;
