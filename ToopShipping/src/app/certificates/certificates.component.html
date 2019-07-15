@@ -5,9 +5,9 @@
     Return to ships list
   </button>
   <!-- Button trigger modal -->
-  <button type="button" class="btn-sm btn-primary" data-toggle="modal" data-target="#addCertificateModal">
-    Add a certificate
-  </button>
+  <!--<button type="button" class="btn-sm btn-primary" data-toggle="modal" data-target="#addCertificateModal">-->
+    <!--Add a certificate-->
+  <!--</button>-->
   <div class="row"></div>
   <!--<button (click)="downloadCertificate()">Download</button>-->
 
@@ -18,7 +18,7 @@
         <th scope="col">Certificate ID</th>
         <th scope="col">Certificate name</th>
         <th scope="col"></th>
-        <th scope="col"></th>
+        <th *ngIf="selectedCountry == shipCountry" scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -27,7 +27,8 @@
         <td scope="col">{{certificate.certificateName}}</td>
         <td scope="col"><button type="button" class="btn-sm btn-primary" (click)="viewCertificate(certificate.file)">
           View Certificate</button></td>
-        <td scope="col"><button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">
+        <td *ngIf="selectedCountry == shipCountry" scope="col">
+          <button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">
           Delete Certificate</button></td>
       </tr>
     </tbody>

@@ -23,7 +23,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     RouterModule.forRoot([
       {path: '', component: CountrySelectComponent},
       {path: 'ships/:country', component: ShipsComponent},
-      {path: 'certificates/:country/:shipId', component: CertificatesComponent},
+      {path: 'certificates/:country/:shipId/:shipCountry', component: CertificatesComponent},
     ]),
     BrowserAnimationsModule,
     ToastrModule.forRoot()
