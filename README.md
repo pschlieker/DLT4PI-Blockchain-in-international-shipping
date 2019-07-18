@@ -6,6 +6,8 @@
 # Usage
 Clone the repo  (`git clone https://bitbucket.org/fogshot/blockchain-shipping.git`)
 
+Install platform depend Hyperledger Farbic Binaries to `./bin` by running `./bootstrap.sh`
+
 In the `./fabric-network` directory, use the following command to boot up the fabric network including CAs:
 
 `./build-network.sh up -f docker-compose-e2e.yaml`
