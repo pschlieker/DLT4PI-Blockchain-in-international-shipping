@@ -7,7 +7,7 @@ module.exports = {
      * Encrypts a file using the passed key and uploads it to IPFS
      * The return value is the hash to the file on IPFS and the 
      * key separated by ;
-     * @param {buffer} fileBuffer - Buffer containing the file
+     * @param {Buffer} fileBuffer - Buffer containing the file
      * @returns {string} hash;key
      */
     async uploadFile(fileBuffer) {
@@ -35,7 +35,7 @@ module.exports = {
      * The return value is the content of the file as buffer
      * @param {string} hashkey - Hash and Key of the file to be downloaded, 
      * separated by ; 
-     * @returns {buffer} buffer containing the decrypted file
+     * @returns {Buffer} buffer containing the decrypted file
      */
     async retrieveFile(hashkey) {
         try {
