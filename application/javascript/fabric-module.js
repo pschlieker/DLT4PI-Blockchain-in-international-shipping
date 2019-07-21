@@ -320,9 +320,10 @@ module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} country
      * @param {string} imo
      */
-    async requestShipCert(ccpPath, username, channelName, imo) {
+    async requestShipCert(ccpPath, username, channelName, country, imo) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -343,10 +344,10 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Get the MSPid of the logged in identity (i.e. the requesting authority)
-            const requester = gateway.getClient().getMspid();   // assume MSPid is the country name
+            const requester = ((gateway.getClient().getMspid() == 'DmaMSP') ? 'Denmark' : 'Estonia');
 
             // Get the country of the queried ship
-            const ship = await contract.evaluateTransaction('queryShip', imo);
+            const ship = await contract.evaluateTransaction('queryShip', country, imo);
             console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
             const targetCountry = JSON.parse(ship.toString()).flag;
 
