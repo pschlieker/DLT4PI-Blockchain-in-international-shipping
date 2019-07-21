@@ -145,11 +145,13 @@ module.exports = {
             const client = gateway.getClient();
             // Get new chaincode version
             const chaincodeVersion = this.getNewChaincodeVer();
+            const peers = client.getPeersForOrg(gateway.getClient().getMspid());
             // Install chaincode
-            await client.installChaincode({
+            let installResponse = await client.installChaincode({
+                targets: peers,
                 chaincodeId: 'shipping',
                 chaincodeType: 'node',
-                chaincodePath: '../../chaincode/lib/shipping',
+                chaincodePath: '../../chaincode',
                 chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
                 channelNames: [channelName]
             });
