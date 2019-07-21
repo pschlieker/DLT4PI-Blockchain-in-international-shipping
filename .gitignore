@@ -52,3 +52,6 @@ ToopShipping/typings
 .DS_Store
 Thumbs.db
 .idea/
+
+# Platform Dependend Binaries
+bin

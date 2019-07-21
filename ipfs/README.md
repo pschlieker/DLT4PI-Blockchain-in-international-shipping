@@ -12,5 +12,5 @@ These can then be interacted with e.g. using the node package ipfs-http-client
  Import the ipfs-module.js to your module:
  `const ipfs = require(PATH_TO_YOUR_MODULE')`
 
- `ipfs.uploadFile(PATH_TO_FILE)`
+ `ipfs.uploadFile(BUFFER_OF_FILE)`
  `ipfs.retrieveFile(HASH)`

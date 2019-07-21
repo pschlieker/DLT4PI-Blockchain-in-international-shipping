@@ -11,6 +11,8 @@ volumes:
   peer1.dma.dk:
   peer0.veeteedeamet.ee:
   peer1.veeteedeamet.ee:
+  ipfs_staging:
+  ipfs_data:
 
 networks:
   byfn:
@@ -130,4 +132,17 @@ services:
     volumes:
     - "../oracle/html:/var/www/html"
     networks: 
-     - byfn
+    - byfn
+
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    container_name: ipfs
+    volumes:
+    - ipfs_staging:/export
+    - ipfs_data:/data/ipfs
+    ports:
+    - "5001:5001"
+    - "4001:4001"
+    - "8080:8080"
+    networks: 
+    - byfn

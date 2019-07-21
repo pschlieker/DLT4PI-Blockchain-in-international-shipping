@@ -145,11 +145,13 @@ module.exports = {
             const client = gateway.getClient();
             // Get new chaincode version
             const chaincodeVersion = this.getNewChaincodeVer();
+            const peers = client.getPeersForOrg(gateway.getClient().getMspid());
             // Install chaincode
-            await client.installChaincode({
+            let installResponse = await client.installChaincode({
+                targets: peers,
                 chaincodeId: 'shipping',
                 chaincodeType: 'node',
-                chaincodePath: '../../chaincode/lib/shipping',
+                chaincodePath: '../../chaincode',
                 chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
                 channelNames: [channelName]
             });
@@ -274,9 +276,9 @@ module.exports = {
      * @param {string} imo
      * @param {string} issueDate
      * @param {string} expiryDate
-     * @param {string} filePath - the PDF certificate to be stored on IPFS
+     * @param {Buffer} file - buffer containing the PDF certificate to be stored on IPFS
      */
-    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, filePath) {
+    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, file) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -297,12 +299,13 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Upload the certificate to IPFS
-            let fileHash = await ipfs.uploadFile(filePath);
+            let fileHashKey = await ipfs.uploadFile(file);
 
             // Submit the specified transaction.
-            // createPrivateShipCertificate - requires 7 argument, e.g. ("createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert")
+            // createPrivateShipCertificate - requires 7 argument, e.g. ("createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_HashKey_to_Cert")
             const transactionName = 'createPrivateShipCertificate';
-            await contract.submitTransaction(transactionName, country, certName, certNum, imo, new Date(issueDate), new Date(expiryDate), fileHash);
+
+            await contract.submitTransaction(transactionName, country, certName, certNum, imo, issueDate, expiryDate, fileHashKey);
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();
@@ -319,9 +322,10 @@ module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} country
      * @param {string} imo
      */
-    async requestShipCert(ccpPath, username, channelName, imo) {
+    async requestShipCert(ccpPath, username, channelName, country, imo) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -342,10 +346,10 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Get the MSPid of the logged in identity (i.e. the requesting authority)
-            const requester = gateway.getClient().getMspid();   // assume MSPid is the country name
+            const requester = ((gateway.getClient().getMspid() == 'DmaMSP') ? 'Denmark' : 'Estonia');
 
             // Get the country of the queried ship
-            const ship = await contract.evaluateTransaction('queryShip', imo);
+            const ship = await contract.evaluateTransaction('queryShip', country, imo);
             console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
             const targetCountry = JSON.parse(ship.toString()).flag;
 

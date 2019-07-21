@@ -1,50 +1,57 @@
 
 const ipfsClient  = require('ipfs-http-client');
-const fs = require('fs');
 const crypto = require('./crypto.js');
 
 module.exports = {
-    async uploadFile(filePath) {
+    /**
+     * Encrypts a file using the passed key and uploads it to IPFS
+     * The return value is the hash to the file on IPFS and the 
+     * key separated by ;
+     * @param {Buffer} fileBuffer - Buffer containing the file
+     * @returns {string} hash;key
+     */
+    async uploadFile(fileBuffer) {
         try {
             let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
-            // Creating buffer for ipfs function to add file to the system
-            let fileBuffer = Buffer.from(fs.readFileSync(filePath));
+      
             // Create new random password / key
             let key = crypto.generateKey();
             
             // Encrypt the File Buffer
-            let encryptedbuffer = crypto.encryptBuffer(filebuffer,key);
-            console.log(`The file was encrypted using the password ${key}`);
+            let encryptedbuffer = crypto.encryptBuffer(fileBuffer,key);
 
             // Upload the file to IPFS
-            ipfs.files.add(encryptedbuffer, function (err, file) {
-                if (err) { throw new Error(err); }
-                fileHash = file[0].hash;
-                console.log(`The file was uploaded successfullly and has the hash ${fileHash}`);
-                return fileHash;
-            });
+            let results = await ipfs.add(encryptedbuffer);
+            fileHash = results[0].hash;
+            console.log(`The file was encrypted with the key ${key} and uploaded successfully with the hash ${fileHash}`);
+            return fileHash+";"+key;
         } catch (err) {
             throw new Error(`Failed to upload file to IPFS: ${err}`);
         }
     },
 
-    async retrieveFile(hash, password) {
+    /**
+     * Downloads the file by hash from IPFS and decrypts it
+     * The return value is the content of the file as buffer
+     * @param {string} hashkey - Hash and Key of the file to be downloaded, 
+     * separated by ; 
+     * @returns {Buffer} buffer containing the decrypted file
+     */
+    async retrieveFile(hashkey) {
         try {
             let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
-            // Retrieve file
-            ipfs.files.get(hash, function (err, files) {
-                if (err) { throw new Error(err); }
-                files.forEach((file) => {
-                    // Decrypt file
-                    let encryptedContent = file.content.toString('utf8');
-                    let content = crypto.decryptBuffer(encryptedContent, password);
+            
+            //Separate key from hash
+            var [hash, key] = hashkey.split(";");
 
-                    console.log(content.toString('utf8'));
-                    return content;
-                })
-            });
+            // Retrieve file
+            let files = await ipfs.get(hash);
+            let content = crypto.decryptBuffer(files[0].content, key);
+           
+            console.log("The file was retrieved and decrypted successfully");
+            return content;
         } catch (err) {
-            throw new Error(`Failed to download file: ${error}`);
+            throw new Error(`Failed to download file: ${err}`);
         }
     }
 }
