@@ -201,6 +201,7 @@ let Chaincode = class {
         // === Check whether the ship exists from chaincode state ===
         let maAsBytes = await stub.getState(country);
         let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
+        console.log(ship.toString());
         if (!ship || ship.length <= 1) {
             throw new Error('Error occured retrieving the ship');
         }
@@ -224,6 +225,7 @@ let Chaincode = class {
         let country = args[0];
         let imo = args[3];
         let newCert = new PrivateShipCertificate('privShipCert', country, args[1], args[2], imo, args[4], args[5], args[6]);
+        console.log(newCert.toString());
 
         // === Check whether the ship exists from chaincode state ===
         let maAsBytes = await stub.getState(country);

@@ -139,12 +139,12 @@ instantiateChaincode() {
   # the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH} >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "OR ('DmaMSP.client','VtaMSP.client')" --collections-config ${COLLECTIONS_PATH} >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH} >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "OR ('DmaMSP.client','VtaMSP.client')" --collections-config ${COLLECTIONS_PATH} >&log.txt
     res=$?
     set +x
   fi

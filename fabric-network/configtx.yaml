@@ -57,10 +57,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('DmaMSP.admin', 'DmaMSP.peer', 'DmaMSP.client')"
+                Rule: "OR('DmaMSP.admin', 'DmaMSP.peer', 'DmaMSP.client', 'DmaMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('DmaMSP.admin', 'DmaMSP.client')"
+                Rule: "OR('DmaMSP.admin', 'DmaMSP.peer', 'DmaMSP.client', 'DmaMSP.member')"
             Admins:
                 Type: Signature
                 Rule: "OR('DmaMSP.admin')"
@@ -89,10 +89,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('VtaMSP.admin', 'VtaMSP.peer', 'VtaMSP.client')"
+                Rule: "OR('VtaMSP.admin', 'VtaMSP.peer', 'VtaMSP.client', 'VtaMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('VtaMSP.admin', 'VtaMSP.client')"
+                Rule: "OR('VtaMSP.admin', 'DmaMSP.peer', 'VtaMSP.client', 'VtaMSP.member')"
             Admins:
                 Type: Signature
                 Rule: "OR('VtaMSP.admin')"

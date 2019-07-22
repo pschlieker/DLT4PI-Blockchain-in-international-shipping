@@ -102,7 +102,7 @@ module.exports = {
 
     /**
      * Execute grantCertAccess to grant the private certificate collection to another Marititme Authority
-     * e.g. grantCertAccess('connectionProfile.json', 'Denmark', 'shipChannel', 'Denmark', 'Estonia)
+     * e.g. grantCertAccess('connectionProfile.json', 'username', 'channelName','Denmark', 'Estonia)
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
@@ -120,15 +120,20 @@ module.exports = {
 
             let requesterName = requester.charAt(0).toUpperCase() + requester.slice(1).toLowerCase();
             let targetName = target.charAt(0).toUpperCase() + target.slice(1).toLowerCase();
+            if (targetName === 'Denmark') {
+                targetName = 'Dma';
+            } else if (targetName === 'Estonia') {
+                targetName = 'Vta';
+            }
             let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config.json');
-
             // read the original endorsement policy
             let config = JSON.parse(fs.readFileSync(collectionConfigPath));
             config.forEach((collection) => {
                 if (collection.name === `collection${targetName}ShipCertificates`) {
-                    let policy = collection.policy; // OR('DenmarkMSP.member') change to OR('DenmarkMSP.member', 'EstoniaMSP.member')
+                    // OR('DmaMSP.client') change to OR('DmaMSP.client', 'VtaMSP.client')
+                    let policy = collection.policy;
                     let orginalPolicy = policy.substring(0, policy.lastIndexOf('\'') + 1);
-                    let requesterMSP = requesterName + 'MSP.member';
+                    let requesterMSP = requesterName + 'MSP.client';
                     let newPolicy = orginalPolicy + `, '${requesterMSP}')`;
                     collection.policy = newPolicy;
                     console.log('New policy will be: ' + newPolicy);
@@ -136,6 +141,7 @@ module.exports = {
             });
             // write the new endorsement policy to the file
             fs.writeFileSync(collectionConfigPath, JSON.stringify(config, null, 2));
+            console.log('New policy is written');
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
@@ -151,10 +157,11 @@ module.exports = {
                 targets: peers,
                 chaincodeId: 'shipping',
                 chaincodeType: 'node',
-                chaincodePath: '../../chaincode',
+                chaincodePath: '../../chaincode/node',
                 chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
                 channelNames: [channelName]
             });
+            console.log('Chaincode is installed');
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -207,10 +214,21 @@ module.exports = {
             const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
+            // Get the country of the logged user
+            const Mspid = gateway.getClient().getMspid();
+            let country;
+            console.log(Mspid);
+            if (Mspid === 'DmaMSP') {
+                country = 'Denmark';
+            } else if (Mspid === 'VtaMSP') {
+                country = 'Estonia';
+            }
+            console.log(country);
+
             // Evaluate the specified transaction.
-            // readPrivateShipCertificate - requires 1 argument, e.g. ('readPrivateShipCertificate', '5671234')
+            // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
             const transactionName = 'readPrivateShipCertificate';
-            const result = await contract.evaluateTransaction(transactionName, imo);
+            const result = await contract.evaluateTransaction(transactionName, country, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
 
