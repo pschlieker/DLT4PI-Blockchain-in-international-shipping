@@ -276,9 +276,9 @@ module.exports = {
      * @param {string} imo
      * @param {string} issueDate
      * @param {string} expiryDate
-     * @param {Buffer} file - buffer containing the PDF certificate to be stored on IPFS
+     * @param {string} fileHash - the IPFS Hash that links to the PDF certificate
      */
-    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, file) {
+    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, fileHash) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -298,14 +298,11 @@ module.exports = {
             const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
-            // Upload the certificate to IPFS
-            let fileHashKey = await ipfs.uploadFile(file);
-
             // Submit the specified transaction.
             // createPrivateShipCertificate - requires 7 argument, e.g. ("createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_HashKey_to_Cert")
             const transactionName = 'createPrivateShipCertificate';
 
-            await contract.submitTransaction(transactionName, country, certName, certNum, imo, issueDate, expiryDate, fileHashKey);
+            await contract.submitTransaction(transactionName, country, certName, certNum, imo, issueDate, expiryDate, fileHash);
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();

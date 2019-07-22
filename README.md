@@ -18,3 +18,11 @@ You can skip the execution of test queries by supplying `-q`:
 
 Import `./application/javascript/fabric-module.js` into your frontend application to invoke
 chaincode on the network. It runs on the Fabric Node SDK.
+
+In order to run `queryTest.js`, the following command should be used:
+
+`cd ./application/javascript/`
+`npm install`
+`cd ../../ipfs`
+`npm install`
+`node ../application/javascript/queryTest.js`

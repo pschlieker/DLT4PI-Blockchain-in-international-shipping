@@ -1,7 +1,7 @@
 [
   {
     "name": "collectionDenmarkShipCertificates",
-    "policy": "OR('DmaMSP.member')",
+    "policy": "OR('DmaMSP.client')",
     "requiredPeerCount": 0,
     "maxPeerCount": 3,
     "blockToLive": 1000000,
@@ -9,7 +9,7 @@
   },
   { 
     "name": "collectionEstoniaShipCertificates",
-    "policy": "OR('VtaMSP.member')",
+    "policy": "OR('VtaMSP.client')",
     "requiredPeerCount": 0,
     "maxPeerCount": 3,
     "blockToLive": 1000000,
