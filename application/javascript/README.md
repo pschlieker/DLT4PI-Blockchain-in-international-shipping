@@ -1,5 +1,12 @@
 # Usage
 
+First run the enroll admin and register user scripts to interact with the fabric network:
+`node enrollAndRegister.js`
+
+To reset the enrollment, run this:
+`./resetEnrollement.sh`
+
+To interact with the fabric network in your application, import the fabric module as follow:
 `const fabric = require('./fabric-module');`
 
 # Functions

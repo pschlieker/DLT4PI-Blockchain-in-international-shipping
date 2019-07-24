@@ -130,10 +130,10 @@ module.exports = {
             let config = JSON.parse(fs.readFileSync(collectionConfigPath));
             config.forEach((collection) => {
                 if (collection.name === `collection${targetName}ShipCertificates`) {
-                    // OR('DmaMSP.client') change to OR('DmaMSP.client', 'VtaMSP.client')
+                    // OR('DmaMSP.member') change to OR('DmaMSP.member', 'VtaMSP.member')
                     let policy = collection.policy;
                     let orginalPolicy = policy.substring(0, policy.lastIndexOf('\'') + 1);
-                    let requesterMSP = requesterName + 'MSP.client';
+                    let requesterMSP = requesterName + 'MSP.member';
                     let newPolicy = orginalPolicy + `, '${requesterMSP}')`;
                     collection.policy = newPolicy;
                     console.log('New policy will be: ' + newPolicy);
@@ -374,7 +374,7 @@ module.exports = {
 
             // If consensus is reached on the location of the ship (i.e. ship is within the requester's borders)
             if (isWithinBorder) {
-                this.grantCertAccess(ccpPath, username, channelName, requester, targetCountry);
+                await this.grantCertAccess(ccpPath, username, channelName, requester, targetCountry);
                 console.log(`Certificates of ship ${imo}: Access Granted`);
             } else {
                 console.log(`The ship ${imo} is not within ${requester}'s borders`);
