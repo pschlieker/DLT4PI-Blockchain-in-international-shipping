@@ -127,7 +127,7 @@ module.exports = {
             }
             let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config.json');
             // read the original endorsement policy
-            let config = JSON.parse(fs.readFileSync(collectionConfigPath));
+            let config = JSON.parse(await fs.readFileSync(collectionConfigPath));
             config.forEach((collection) => {
                 if (collection.name === `collection${targetName}ShipCertificates`) {
                     // OR('DmaMSP.member') change to OR('DmaMSP.member', 'VtaMSP.member')
@@ -140,7 +140,7 @@ module.exports = {
                 }
             });
             // write the new endorsement policy to the file
-            fs.writeFileSync(collectionConfigPath, JSON.stringify(config, null, 2));
+            await fs.writeFileSync(collectionConfigPath, JSON.stringify(config, null, 2));
             console.log('New policy is written');
 
             // Create a new gateway for connecting to our peer node.
@@ -163,10 +163,10 @@ module.exports = {
             });
             console.log('Chaincode is installed');
 
-            // Get the network (channel) our contract is deployed to.
-            const network = await gateway.getNetwork(channelName);
+            // Get the channel our contract is deployed to.
+            const channel = await client.getChannel();
             // Upgrade chaincode
-            let proposalResponse = await network.sendUpgradeProposal({
+            let proposalResponse = await channel.sendUpgradeProposal({
                 chaincodeId: 'shipping',
                 chaincodeType: 'node',
                 chaincodeVersion: chaincodeVersion,
@@ -176,7 +176,7 @@ module.exports = {
             console.log(proposalResponse);
 
             console.info('============= START : Chaincode Upgrade ===========');
-            const transactionResponse = await network.sendTransaction({
+            const transactionResponse = await channel.sendTransaction({
                 proposalResponses: proposalResponse[0],
                 proposal: proposalResponse[1]
             });
@@ -361,12 +361,14 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // Get the MSPid of the logged in identity (i.e. the requesting authority)
-            const requester = ((gateway.getClient().getMspid() == 'DmaMSP') ? 'Denmark' : 'Estonia');
+            const requester = ((gateway.getClient().getMspid() === 'DmaMSP') ? 'Denmark' : 'Estonia');
+            console.log('Request Country: ' + requester);
 
             // Get the country of the queried ship
             const ship = await contract.evaluateTransaction('queryShip', country, imo);
             console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
             const targetCountry = JSON.parse(ship.toString()).flag;
+            console.log('Target Country: ' + targetCountry);
 
             // Check the location of the ship by calling the verifyLocation chaincode
             const isWithinBorder = await contract.evaluateTransaction('verifyLocation', imo, requester);
@@ -379,6 +381,40 @@ module.exports = {
             } else {
                 console.log(`The ship ${imo} is not within ${requester}'s borders`);
             }
+
+        } catch (error) {
+            console.error(`Failed to evaluate transaction: ${error}`);
+        }
+    },
+
+    async verifyLocation(ccpPath, username, channelName, country, imo) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the contract from the network.
+            const contractName = 'mycc';
+            const contract = network.getContract(contractName);
+
+            // Evaluate the specified transaction.
+            // verifyLocation - requires 2 argument, e.g. ("verifyLocation", "9166778", "Estonia")
+            const transactionName = 'verifyLocation';
+            country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
+            console.log(imo + ' ' + country);
+            const result = await contract.evaluateTransaction(transactionName, imo, country);
+            console.log(`Transaction has been evaluated, result is: ${result}`);
+            return result;
 
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);

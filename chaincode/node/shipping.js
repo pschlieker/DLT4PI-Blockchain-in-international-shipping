@@ -119,7 +119,7 @@ let Chaincode = class {
 
         // === Create MaritimeAuthorities objects ===
         let denmarkBorders = JSON.parse(fs.readFileSync('./denmark-eez-outerbounds.json')).geometry.coordinates;
-        let estoniaBorders = JSON.parse(fs.readFileSync('./denmark-eez-outerbounds.json')).geometry.coordinates;
+        let estoniaBorders = JSON.parse(fs.readFileSync('./estonia-eez-outerbounds.json')).geometry.coordinates;
         let maritimeAuthorities = [
             new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkBorders),
             new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaBorders)
@@ -288,7 +288,6 @@ let Chaincode = class {
         let imo = args[1];
 
         let maAsBytes = await stub.getState(country);
-        console.log(maAsBytes.toString());
         let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -351,7 +350,7 @@ let Chaincode = class {
     // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
     // ==========================================================================
     async verifyLocation(stub, args) {
-        // e.g. '{"Args":["verifyLocation", "9166778", "Denmark"]}'
+        // e.g. '{"Args":["verifyLocation", "9166778", "Estonia"]}'
         console.info('============= START : Verify Location ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (imo, country)');
@@ -362,25 +361,33 @@ let Chaincode = class {
         // Get the country's borders
         
         let maAsBytes = await stub.getState(country);
-        console.log(maAsBytes.toString());
-        let borders = JSON.parse(maAsBytes).borders;
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
         }
+        let borders = JSON.parse(maAsBytes).borders;
+        console.log(country + ' borders: ');
+        console.log(borders);
 
         // TODO: connect to external api
         let api = `http://oracle/${imo}`;
-        request(api, { json: true }, (err, res, body) => {
+        console.log('Ship IMO: ' + api);
+        request(api, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
-            let shipLat = body.entries[0].lat;
-            let shipLng = body.entries[0].lng;
+            let msgBody = JSON.parse(body);
+            let resultAsBytes;
+            let shipLat = parseFloat(msgBody['entries'][0].lat);
+            let shipLng = parseFloat(msgBody['entries'][0].lng);
+            console.info(shipLat + ' ' + shipLng);
             // check if the location is within the country's maritime borders
-            if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
+            let check = geolocation.insidePolygon([shipLat, shipLng], borders);
+            console.log(check)
+            if (check) {
                 console.info('============= END : Verify Location ===========');
-                return shim.success(Buffer.from('true'));
+                resultAsBytes = Buffer.from('true');
             } else {
-                return shim.success(Buffer.from('false'));
+                resultAsBytes = Buffer.from('false');
             }
+            return resultAsBytes;
         });
     }
 
