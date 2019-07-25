@@ -294,9 +294,10 @@ module.exports = {
      * @param {string} imo
      * @param {string} issueDate
      * @param {string} expiryDate
-     * @param {string} fileHash - the IPFS Hash that links to the PDF certificate
+     * @param {string} certHash - the IPFS Hash that links to the PDF certificate
      */
-    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, fileHash) {
+
+    async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -316,15 +317,26 @@ module.exports = {
             const contractName = 'mycc';
             const contract = network.getContract(contractName);
 
-            // Submit the specified transaction.
-            // createPrivateShipCertificate - requires 7 argument, e.g. ("createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_HashKey_to_Cert")
-            const transactionName = 'createPrivateShipCertificate';
+            // private data
+            const certificateJSON = {
+                'certName': certName,
+                'certNum': certNum, // string <-> byte[]
+                'imo': imo, // string <-> byte[]
+                'issueDate': issueDate, // string <-> byte[]
+                'expiryDate': expiryDate, // string <-> byte[]
+                'certHash': certHash // string <-> byte[]
+                };
+            const transient_data = {'certificate': Buffer.from(JSON.stringify(certificateJSON))};
+           
+            // Create Transaction and submit
+            const transactionName = 'createPrivateShipCertificateTransient';
+            const results = await contract.createTransaction(transactionName)
+                .setTransient(transient_data)
+                .submit(country, imo);
 
-            await contract.submitTransaction(transactionName, country, certName, certNum, imo, issueDate, expiryDate, fileHash);
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();
-
         } catch (error) {
             console.error(`Failed to submit transaction: ${error}`);
         }
