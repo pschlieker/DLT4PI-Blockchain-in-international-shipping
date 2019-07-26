@@ -21,8 +21,6 @@ chaincode on the network. It runs on the Fabric Node SDK.
 
 In order to run `queryTest.js`, the following command should be used:
 
-`cd ./application/javascript/`
-`npm install`
-`cd ../../ipfs`
-`npm install`
+`cd ./application/javascript/ && npm install && cd ../../ipfs && npm install`
+
 `node ../application/javascript/queryTest.js`

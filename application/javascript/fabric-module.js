@@ -318,25 +318,43 @@ module.exports = {
             const contract = network.getContract(contractName);
 
             // private data
-            const certificateJSON = {
-                'certName': certName,
-                'certNum': certNum, // string <-> byte[]
-                'imo': imo, // string <-> byte[]
-                'issueDate': issueDate, // string <-> byte[]
-                'expiryDate': expiryDate, // string <-> byte[]
-                'certHash': certHash // string <-> byte[]
-                };
-            const transient_data = {'certificate': Buffer.from(JSON.stringify(certificateJSON))};
-           
+            const transientData = {
+                certName: Buffer.from(certName),
+                certNum: Buffer.from(certNum),
+                imo: Buffer.from(imo),
+                issueDate: Buffer.from(issueDate),
+                expiryDate: Buffer.from(expiryDate),
+                certHash: Buffer.from(certHash)
+            };
+
+
             // Create Transaction and submit
             const transactionName = 'createPrivateShipCertificateTransient';
-            const results = await contract.createTransaction(transactionName)
-                .setTransient(transient_data)
+            const result = await contract.createTransaction(transactionName)
+                .setTransient(transientData)
                 .submit(country, imo);
+
 
             console.log('Transaction has been submitted');
 
             await gateway.disconnect();
+
+            // const certificateJSON = {
+            //     'certName': certName,
+            //     'certNum': certNum, // string <-> byte[]
+            //     'imo': imo, // string <-> byte[]
+            //     'issueDate': issueDate, // string <-> byte[]
+            //     'expiryDate': expiryDate, // string <-> byte[]
+            //     'certHash': certHash // string <-> byte[]
+            // };
+            // console.log('Pure cert: ' + certificateJSON);
+            // let stringifyCertificate = JSON.stringify(certificateJSON);
+            // console.log('stringify: ' + stringifyCertificate);
+            // console.log(Buffer.from(stringifyCertificate));
+            // const transient_data = {'certificate': Buffer.from(JSON.stringify(certificateJSON))};
+            // console.log(transient_data);
+
+
         } catch (error) {
             console.error(`Failed to submit transaction: ${error}`);
         }

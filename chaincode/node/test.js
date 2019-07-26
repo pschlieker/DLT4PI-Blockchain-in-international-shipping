@@ -4,7 +4,7 @@ const geolocation = require('geolocation-utils')
 estoniaBorders = fs.readFileSync('estonia-eez-outerbounds.json')
 estoniaBorders = JSON.parse(estoniaBorders)['geometry']['coordinates']
 
-denmarkBorders = fs.readFileSync('estonia-eez-outerbounds.json')
+denmarkBorders = fs.readFileSync('denmark-eez-outerbounds.json')
 denmarkBorders = JSON.parse(denmarkBorders)['geometry']['coordinates']
 
 console.log(estoniaBorders)

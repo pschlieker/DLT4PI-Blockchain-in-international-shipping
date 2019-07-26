@@ -209,6 +209,7 @@ let Chaincode = class {
         // === Get the ship certificate from chaincode state ===
         let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
+        console.log(certsAsBytes.toString())
         return certsAsBytes;
     }
 
@@ -252,32 +253,37 @@ let Chaincode = class {
     async createPrivateShipCertificateTransient(stub, args) {
         console.info('============= START : Creating Ship Certificate using Transient Data ===========');
         if (args.length !== 2) {
-              throw new Error('Incorrect number of arguments. Expecting 1 argument (country, imo).'+
+              throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo).'+
                 'The transient data contains the certificate as JSON '+
-                '{"certName":"NEW International Oil Prevention certificate", "certNum": "901234", "imo": "9166778", "issueDate":"2030-01-01", "expiryDate":"2031-12-31", "certHash":"IPFS_Hash_to_Cert"}');
+                '{"certName":"International Oil Prevention certificate", "certNum": "00000", "imo": "1234567", "issueDate":"2030-01-01", "expiryDate":"2031-12-31", "certHash":"0291392131231234test"}');
         }
 
         // === Retrieve Transient Data ===
+        console.log('Getting Transient Data');
         let transientData = stub.getTransient();
-        console.log(transientData);
-        // convert into buffer
-        var buffer = new Buffer(transientData.map.certificate.value.toArrayBuffer());
-        // from buffer into JSON
-        var certificateJSON = JSON.parse(buffer.toString("utf8"));
-        console.log(certificateJSON);
+        // === convert into string ===
+        console.log('===================================================')
+        let certName = transientData.map.certName.value.toString("utf8"),
+            certNum = transientData.map.certNum.value.toString("utf8"),
+            issueDate = transientData.map.issueDate.value.toString("utf8"),
+            expiryDate = transientData.map.expiryDate.value.toString("utf8"),
+            certHash = transientData.map.certHash.value.toString("utf8")
+
+        console.log(certName);
 
         // === Set Parameters ===
         let country = args[0];
         let imo = args[1];
+        console.log(country, imo);
 
         // === Create certificate ===
         let newCert = new PrivateShipCertificate('privShipCert', 
-            certificateJSON.certName, 
-            certificateJSON.certNum, 
-            certificateJSON.imo,
-            certificateJSON.issueDate,
-            certificateJSON.expiryDate,
-            certificateJSON.certHash);
+            certName, 
+            certNum, 
+            imo,
+            issueDate,
+            expiryDate,
+            certHash);
         console.log("Created new certificate!");
 
         // === Check whether the ship exists from chaincode state ===
@@ -289,12 +295,19 @@ let Chaincode = class {
         }
 
         // === Get the certificates of the ship from the state ===
+        let certs;
         let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
-        let certs = JSON.parse(certsAsBytes);
+        // === check if the ship already contains one or more certificates ===
+        // if yes, append new certificate
+        // if no, just add the new certificate
+        try {
+            certs = JSON.parse(certsAsBytes);
+            // === Push the new certificates into the list of certificates ===
+            certs.push(newCert);
+        } catch (SyntaxError) {
+            certs = newCert;
+        }
         console.log('List of certificates: ' + certs);
-        // === Push the new certificates into the list of certificates ===
-        certs.push(newCert);
-
         // === Save PrivateDenmarkShipCertificates to state ===
         certsAsBytes = Buffer.from(JSON.stringify(certs));
         await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);

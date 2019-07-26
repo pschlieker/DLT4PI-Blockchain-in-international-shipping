@@ -27,8 +27,8 @@ async function runQueryTests(){
     // console.log('########## Query certs of Estonia ##########');
     // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
 
-    console.log('########## Verify Location ##########');
-    await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
+    // console.log('########## Verify Location ##########');
+    // await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
 
     // console.log('########## Request certs of Estonia ##########');
     // await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
@@ -39,15 +39,16 @@ async function runQueryTests(){
 async function createShipTests(){
     console.log('########## START CREATE TESTS ##########');
 
+
     console.log('########## Create Ship for Denmark ##########');
     await shippingClient.createShip(ccpPath, 'user1', 'mychannel', '1234567', 'GreatShip', 'Container Ship', 'Denmark', 'BlockPort', '1234', 'Blocky');
 
     console.log('########## Query the ship ##########');
     await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '1234567');
-
+    
     console.log('########## Create certificate for the ship ##########');
     await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'International Oil Prevention certificate', '00000', '1234567', '2030-01-01', '2031-12-31', '0291392131231234test');
-    
+
     console.log('########## Query certs of the ship ##########');
     await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '1234567');
 
@@ -55,8 +56,8 @@ async function createShipTests(){
 }
 
 async function main() {
-    await runQueryTests();
-    // await createShipTests();
+    // await runQueryTests();
+    await createShipTests();
 }
 
 
