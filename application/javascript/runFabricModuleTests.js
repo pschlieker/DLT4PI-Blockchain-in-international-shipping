@@ -55,9 +55,28 @@ async function createShipTests(){
     console.log('########## END CREATE TESTS ##########');
 }
 
+async function addCertficiate(){
+    console.log('########## START ADD CERTIFICATE TESTS ##########');
+
+    console.log('########## Query the ship ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '9166778');
+
+    console.log('########## Query certs of the ship ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+    
+    console.log('########## Create certificate for the ship ##########');
+    await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
+
+    console.log('########## Query certs of the ship ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+
+    console.log('########## END ADD CERTIFICATE TESTS ##########');
+}
+
 async function main() {
     // await runQueryTests();
-    await createShipTests();
+    // await createShipTests();
+    await addCertficiate();
 }
 
 
