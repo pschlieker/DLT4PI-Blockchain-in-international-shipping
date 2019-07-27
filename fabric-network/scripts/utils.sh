@@ -122,10 +122,17 @@ installChaincode() {
   set -x
   peer chaincode install -n generalData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalData/ >&log.txt
   peer chaincode install -n generalDataSolo -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalDataSolo/ >&log.txt
-  peer chaincode install -n privateDataDma -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}privateData/ >&log.txt
-  # TODO only install chaincode on nodes that should have it (Dma code should not be installed on Vta nodes)
-  peer chaincode install -n privateDataVta -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}privateData/ >&log.txt
   peer chaincode install -n sharePrivateData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}sharePrivateData/ >&log.txt
+
+  #Only install the chaincode on the peers running it
+  if [ $ORG == "1" ]; then
+    peer chaincode install -n privateDataDma -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}privateData/ >&log.txt
+  fi
+
+  if [ $ORG == "2" ]; then
+    peer chaincode install -n privateDataVta -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}privateData/ >&log.txt
+  fi
+  
   res=$?
   set +x
   cat log.txt
@@ -146,19 +153,35 @@ instantiateChaincode() {
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
     peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v ${VERSION}                              -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v ${VERSION}                              -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v ${VERSION}                              -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION}                              -P "AND ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+    
+    #Only instatiate the chaincode on the peers running it
+    if [ $ORG == "1" ]; then
+      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
+    fi
+
+    if [ $ORG == "2" ]; then
+      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
+    fi
+    
     res=$?
     set +x
   else
     set -x
     peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
     peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+    
+    #Only instatiate the chaincode on the peers running it
+    if [ $ORG == "1" ]; then
+      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
+    fi
+    
+    if [ $ORG == "2" ]; then
+      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
+    fi
+
     res=$?
     set +x
   fi
