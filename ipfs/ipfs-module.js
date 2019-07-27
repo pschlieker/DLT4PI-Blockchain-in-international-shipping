@@ -12,7 +12,7 @@ module.exports = {
      */
     async uploadFile(fileBuffer) {
         try {
-            let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
+            let ipfs = ipfsClient('localhost', '5010', {protocol: 'http'});
       
             // Create new random password / key
             let key = crypto.generateKey();
@@ -39,7 +39,7 @@ module.exports = {
      */
     async retrieveFile(hashkey) {
         try {
-            let ipfs = ipfsClient('localhost', '5001', {protocol: 'http'});
+            let ipfs = ipfsClient('localhost', '5010', {protocol: 'http'});
             
             //Separate key from hash
             var [hash, key] = hashkey.split(";");
