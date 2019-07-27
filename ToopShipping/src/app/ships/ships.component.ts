@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import * as axios from 'axios';
-import {ShipService} from "./ship.service";
+// import {ShipService} from "./ship.service";
 
 @Component({
   selector: 'app-ships',
@@ -20,7 +20,7 @@ export class ShipsComponent implements OnInit {
     {shipId: '4', shipName: 'Ship1', shipCountry: 'Estonia'},
   ];
 
-  constructor(private route: ActivatedRoute, private router: Router, private toastr: ToastrService, private shipService: ShipService) {
+  constructor(private route: ActivatedRoute, private router: Router, private toastr: ToastrService) {
     this.route.params.subscribe(params => {
       if (params.country && params.country !== 'undefined') {
         this.selectedCountry = params.country;
@@ -32,6 +32,18 @@ export class ShipsComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  getShips() {
+    axios.default.get('https://localhost:3000/queryShips/')
+      .then((response) => {
+        // handle success
+        this.shipList = response.data;
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error);
+      });
   }
 
   saveShip() {

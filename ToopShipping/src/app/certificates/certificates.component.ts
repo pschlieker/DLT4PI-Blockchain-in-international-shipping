@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import * as axios from 'axios';
-import {CertificateService} from "./certificate.service";
+// import {CertificateService} from "./certificate.service";
 
 @Component({
   selector: 'app-certificates',
@@ -21,7 +21,7 @@ export class CertificatesComponent implements OnInit {
   ];
 
 
-  constructor(private route: ActivatedRoute, private toastr: ToastrService, private certService: CertificateService) {
+  constructor(private route: ActivatedRoute, private toastr: ToastrService) {
     this.route.params.subscribe(params => {
       if (params.country && params.country !== 'undefined') {
         this.selectedCountry = params.country;
