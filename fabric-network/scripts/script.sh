@@ -14,8 +14,9 @@ DELAY="$2"
 LANGUAGE="$3"
 TIMEOUT="$4"
 VERBOSE="$5"
-COLLECTIONS_PATH="$6"
-SKIP_QUERIES="$7"
+COLLECTIONS_PATH_PRIVATE="$6"
+COLLECTIONS_PATH_SHARED="$7"
+SKIP_QUERIES="$8"
 : ${CHANNEL_NAME:="mychannel"}
 : ${DELAY:="3"}
 : ${LANGUAGE:="golang"}
@@ -95,14 +96,18 @@ installChaincode 1 1
 echo "Install chaincode on peer1.veeteedeamet.ee ..."
 installChaincode 1 2
 
+echo "Finished installing chaincode."
+
 # Instantiate chaincode on peer0.dma.dk
 echo "Instantiating chaincode on peer0.dma.dk ..."
-echo "Debug: Collections path: $COLLECTIONS_PATH"
+echo "Debug: Private Collections path: $COLLECTIONS_PATH_PRIVATE"
+echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
 instantiateChaincode 0 1
 
 # Instantiate chaincode on peer0.veeteedeamet.ee
 echo "Instantiating chaincode on peer0.veeteedeamet.ee ..."
-echo "Debug: Collections path: $COLLECTIONS_PATH"
+echo "Debug: Private Collections path: $COLLECTIONS_PATH_PRIVATE"
+echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
 instantiateChaincode 0 2
 
 # Initialize chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
