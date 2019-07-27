@@ -1,6 +1,5 @@
 const { FileSystemWallet, Gateway } = require('fabric-network');
 const path = require('path');
-const ipfs = require('../../ipfs/ipfs-module');
 const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
@@ -255,13 +254,11 @@ module.exports = {
             // Get the country of the logged user
             const Mspid = gateway.getClient().getMspid();
             let country;
-            console.log(Mspid);
             if (Mspid === 'DmaMSP') {
                 country = 'Denmark';
             } else if (Mspid === 'VtaMSP') {
                 country = 'Estonia';
             }
-            console.log(country);
 
             // Evaluate the specified transaction.
             // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
@@ -365,7 +362,6 @@ module.exports = {
                 expiryDate: Buffer.from(expiryDate),
                 certHash: Buffer.from(certHash)
             };
-
 
             // Create Transaction and submit
             const transactionName = 'createPrivateShipCertificateTransient';
