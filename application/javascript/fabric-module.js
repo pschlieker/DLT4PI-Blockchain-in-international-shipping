@@ -396,6 +396,7 @@ module.exports = {
 
         } catch (error) {
             console.error(`Failed to submit transaction: ${error}`);
+            return Promise.reject(`Failed to submit transaction: ${error}`);
         }
     },
 
