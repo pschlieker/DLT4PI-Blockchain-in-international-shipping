@@ -101,6 +101,44 @@ module.exports = {
     },
 
     /**
+     * Execute queryAllShips chaincode
+     * @param {string} ccpPath - path to connection profile
+     * @param {string} username - username of the peer
+     * @param {string} channelName
+     */
+    async queryAllShips(ccpPath, username, channelName) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the contract from the network.
+            const contractName = 'mycc';
+            const contract = network.getContract(contractName);
+
+            // Evaluate the specified transaction.
+            // queryAllShipsByCountry - requires 1 argument, e.g. ("queryAllShipsByCountry", "Denmark")
+            const transactionName = 'queryAllShips';
+            const result = await contract.evaluateTransaction(transactionName);
+            console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
+            return result;
+
+        } catch (error) {
+            console.error(`Failed to evaluate transaction: ${error}`);
+        }
+    },
+
+    /**
      * Execute grantCertAccess to grant the private certificate collection to another Marititme Authority
      * e.g. grantCertAccess('connectionProfile.json', 'username', 'channelName','Denmark', 'Estonia)
      * @param {string} ccpPath - path to connection profile
