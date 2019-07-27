@@ -197,8 +197,9 @@ function networkUp() {
   fi
 
   # now run the end to end script
-  echo "Debug: Collections path: $COLLECTIONS_PATH"
-  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH $SKIP_QUERIES
+  echo "Debug: Private Collections path: $COLLECTIONS_PATH_PRIVATE"
+  echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
+  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH_PRIVATE $COLLECTIONS_PATH_SHARED $SKIP_QUERIES
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Test failed"
     exit 1
@@ -518,7 +519,8 @@ IMAGETAG="1.4"
 CONSENSUS_TYPE="solo"
 
 ## custom env variables
-COLLECTIONS_PATH="/opt/gopath/src/github.com/chaincode/collections_config.json"
+COLLECTIONS_PATH_PRIVATE="/opt/gopath/src/github.com/chaincode/node/privateData/collections_config.json"
+COLLECTIONS_PATH_SHARED="/opt/gopath/src/github.com/chaincode/node/sharePrivateData/collections_config.json"
 
 # Parse commandline args
 if [ "$1" = "-m" ]; then # supports old usage, muscle memory is powerful!
