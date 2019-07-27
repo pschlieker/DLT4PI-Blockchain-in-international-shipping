@@ -1,10 +1,9 @@
-const { FileSystemWallet, Gateway } = require('fabric-network');
+const {FileSystemWallet, Gateway} = require('fabric-network');
 const path = require('path');
-const ipfs = require('../../ipfs/ipfs-module');
 const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
-const walletPath = path.join(process.cwd(), 'dma','wallet');
+const walletPath = path.join(process.cwd(), 'dma', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
@@ -38,7 +37,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -78,7 +77,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -145,7 +144,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the identity (client) connected to the gateway
             const client = gateway.getClient();
@@ -153,7 +152,7 @@ module.exports = {
             const chaincodeVersion = this.getNewChaincodeVer();
             const peers = client.getPeersForOrg(gateway.getClient().getMspid());
             // Install chaincode
-            let installResponse = await client.installChaincode({
+            await client.installChaincode({
                 targets: peers,
                 chaincodeId: 'shipping',
                 chaincodeType: 'node',
@@ -205,7 +204,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -261,7 +260,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -308,7 +307,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
@@ -381,7 +380,7 @@ module.exports = {
 
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
-            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);

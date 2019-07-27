@@ -1,4 +1,4 @@
-'use strict'
+
 
 const shippingClient = require('./fabric-module');
 const path = require('path');
@@ -6,26 +6,27 @@ const ccpPath = path.resolve(__dirname, '..', '..', 'fabric-network', 'connectio
 
 async function runQueryTests(){
     console.log('########## START QUERY TESTS ##########');
+    //Retrieve Ships
+    console.log('########## Query all ships of Denmark ##########');
+    await shippingClient.queryAllShipsByCountry(ccpPath, 'user1', 'mychannel', 'Denmark');
 
-    // Retrieve Ships
-    // console.log('########## Query all ships of Denmark ##########');
-    // await shippingClient.queryAllShipsByCountry(ccpPath, 'user1', 'mychannel', 'Denmark');
+    console.log('########## Query all ships of Estonia ##########');
+    await shippingClient.queryAllShipsByCountry(ccpPath, 'user1', 'mychannel', 'Estonia');
 
-    // console.log('########## Query all ships of Estonia ##########');
-    // await shippingClient.queryAllShipsByCountry(ccpPath, 'user1', 'mychannel', 'Estonia');
+    console.log('########## Query ship of Denmark ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '9166778');
 
-    // console.log('########## Query ship of Denmark ##########');
-    // await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '9166778');
+    console.log('########## Query ship of Estonia ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
 
-    // console.log('########## Query ship of Estonia ##########');
-    // await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+    console.log('########## Query certs of Denmark ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
 
-    // console.log('########## Query certs of Denmark ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+    console.log('########## Query certs of Estonia ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
 
-    // expect: error
-    // console.log('########## Query certs of Estonia ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+    console.log('########## Request certs of Estonia ##########');
+    await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
 
     // console.log('########## Verify Location ##########');
     // await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
