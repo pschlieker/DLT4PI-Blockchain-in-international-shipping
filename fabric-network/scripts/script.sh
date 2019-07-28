@@ -115,7 +115,7 @@ chaincodeInvokeInitLedgerPrivateVta 0 2
 
 if [ "$SKIP_QUERIES" != "true" ]; then
 
-  echo '==================START: Query transactions=================='
+  echo '==================START: Query transactions Private Certificates=================='
 
   # ==================Query Ship Certificates Private Part==================
 
@@ -138,6 +138,30 @@ if [ "$SKIP_QUERIES" != "true" ]; then
   # Expected: Denmark MA could NOT access Estonia ship certificates
    echo "Querying Denmark certificates on peer0.dma.dk ..."
    chaincodeQueryEstoniaShipCertPrivate 0 1
+
+  echo '==================END: Query transactions Private Certificates=================='
+  
+  
+  echo '==================START: Create Private Certificates=================='
+  # Create Denmark ship certificate on peer0.dma.dk
+  # Expected: Denmark MA can create Denmark ship certificates
+  echo "Creating Denmark certificates on peer0.dma.dk ..."
+  chaincodeCreateDenmarkShipCertPrivate 0 1
+
+  echo "Query Denmark certificates on peer0.dma.dk for verification ..."
+  chaincodeQueryDenmarkShipCertPrivate 0 1
+
+  # Create Estonia ship certificate on peer0.veeteedeamet.ee
+  # Expected: Estonia MA can create Estonia ship certificates
+  echo "Creating Denmark certificates on peer0.veeteedeamet.ee ..."
+  chaincodeCreateEstoniaShipCertPrivate 0 2
+  
+  echo "Querying Estonia certificates on peer0.veeteedeamet.ee for verification ..."
+  chaincodeQueryEstoniaShipCertPrivate 0 2
+
+  echo '==================END: Create Private Certificates=================='
+
+
 
   exit 0
 
