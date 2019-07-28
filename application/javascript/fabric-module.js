@@ -251,8 +251,10 @@ module.exports = {
             //Decide were to get the certificate from
             //If it is own ship, private certificate, if not shared certificate
             if(requestingCountry == country){
+                console.log("Getting certificate from private collection");
                 return this.queryPrivateCert(ccpPath, username, channelName, imo);
             }else{
+                console.log("Getting certificate from shared collection");
                 return this.querySharedCert(ccpPath, username, channelName, imo);
             }
         } catch (error) {
