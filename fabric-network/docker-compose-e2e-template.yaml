@@ -131,7 +131,7 @@ services:
     container_name: oracle
     volumes:
     - "../oracle/html:/var/www/html"
-    networks: 
+    networks:
     - byfn
 
   ipfs:
@@ -141,8 +141,8 @@ services:
     - ipfs_staging:/export
     - ipfs_data:/data/ipfs
     ports:
-    - "5001:5001"
+    - "5010:5001"
     - "4001:4001"
     - "8080:8080"
-    networks: 
+    networks:
     - byfn

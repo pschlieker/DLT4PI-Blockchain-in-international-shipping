@@ -1,0 +1,20 @@
+{
+	"name": "generalData",
+	"version": "1.0.0",
+	"description": "shipping chaincode for general data implemented in node.js",
+	"engines": {
+		"node": ">=8.4.0",
+		"npm": ">=5.3.0"
+	},
+	"scripts": {
+		"start": "node ./generalData.js"
+	},
+	"engine-strict": true,
+	"license": "Apache-2.0",
+	"dependencies": {
+		"fabric-shim": "~1.4.0",
+		"geolocation-utils": "^1.2.1",
+		"request": ">=2.88.0",
+		"request-promise": "~4.2.4"
+	}
+}

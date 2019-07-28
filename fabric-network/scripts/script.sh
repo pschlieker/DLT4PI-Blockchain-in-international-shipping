@@ -14,8 +14,9 @@ DELAY="$2"
 LANGUAGE="$3"
 TIMEOUT="$4"
 VERBOSE="$5"
-COLLECTIONS_PATH="$6"
-SKIP_QUERIES="$7"
+PRIVATE_COLLECTIONS_DIR="$6"
+COLLECTIONS_PATH_SHARED="$7"
+SKIP_QUERIES="$8"
 : ${CHANNEL_NAME:="mychannel"}
 : ${DELAY:="3"}
 : ${LANGUAGE:="golang"}
@@ -95,45 +96,76 @@ installChaincode 1 1
 echo "Install chaincode on peer1.veeteedeamet.ee ..."
 installChaincode 1 2
 
+echo "Finished installing chaincode."
+
 # Instantiate chaincode on peer0.dma.dk
 echo "Instantiating chaincode on peer0.dma.dk ..."
-echo "Debug: Collections path: $COLLECTIONS_PATH"
+echo "Debug: Private Collections dir: $PRIVATE_COLLECTIONS_DIR"
+echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
 instantiateChaincode 0 1
+instantiatePrivateChaincode 0 1
+instantiatePrivateChaincode 0 2
 
-# Instantiate chaincode on peer0.veeteedeamet.ee
-echo "Instantiating chaincode on peer0.veeteedeamet.ee ..."
-echo "Debug: Collections path: $COLLECTIONS_PATH"
-instantiateChaincode 0 2
 
 # Initialize chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
-echo "Sending invoke initLedger transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+#echo "Sending invoke initLedger transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
 chaincodeInvokeInitLedger 0 1 0 2
+chaincodeInvokeInitLedgerPrivateDma 0 1
+chaincodeInvokeInitLedgerPrivateVta 0 2
+chaincodeInvokeInitLedgerShared 0 1 0 2
+
 
 if [ "$SKIP_QUERIES" != "true" ]; then
 
-  echo '==================START: Query transactions=================='
+  echo '==================START: Query transactions Private Certificates=================='
 
-  # ==================Query Ship Certificates Part==================
+  # ==================Query Ship Certificates Private Part==================
 
   # Query Denmark ship certificate on peer0.dma.dk
   # Expected: Denmark MA could access Denmark ship certificates
   echo "Querying Denmark certificates on peer0.dma.dk ..."
-  chaincodeQueryDenmarkShipCert 0 1
+  chaincodeQueryDenmarkShipCertPrivate 0 1
 
   # Query Estonia ship certificate on peer1.veeteedeamet.ee
   # Expected: Estonia MA could access Estonia ship certificates
   echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
-  chaincodeQueryEstoniaShipCert 1 2
+  chaincodeQueryEstoniaShipCertPrivate 1 2
 
   # Query Denmark ship certificate on peer1.veeteedeamet.ee
   # Expected: Estonia MA could NOT access Denmark ship certificates
-  echo "Querying Denmark certificates on peer1.veeteedeamet.ee ..."
-  chaincodeQueryDenmarkShipCert 1 2
+   echo "Querying Denmark certificates on peer1.veeteedeamet.ee ..."
+   chaincodeQueryDenmarkShipCertPrivate 1 2
 
   # Query Estonia ship certificate on peer0.dma.dk
   # Expected: Denmark MA could NOT access Estonia ship certificates
-  echo "Querying Denmark certificates on peer0.dma.dk ..."
-  chaincodeQueryEstoniaShipCert 0 1
+   echo "Querying Denmark certificates on peer0.dma.dk ..."
+   chaincodeQueryEstoniaShipCertPrivate 0 1
+
+  echo '==================END: Query transactions Private Certificates=================='
+  
+  
+  echo '==================START: Create Private Certificates=================='
+  # Create Denmark ship certificate on peer0.dma.dk
+  # Expected: Denmark MA can create Denmark ship certificates
+  echo "Creating Denmark certificates on peer0.dma.dk ..."
+  chaincodeCreateDenmarkShipCertPrivate 0 1
+
+  echo "Query Denmark certificates on peer0.dma.dk for verification ..."
+  chaincodeQueryDenmarkShipCertPrivate 0 1
+
+  # Create Estonia ship certificate on peer0.veeteedeamet.ee
+  # Expected: Estonia MA can create Estonia ship certificates
+  echo "Creating Denmark certificates on peer0.veeteedeamet.ee ..."
+  chaincodeCreateEstoniaShipCertPrivate 0 2
+  
+  echo "Querying Estonia certificates on peer0.veeteedeamet.ee for verification ..."
+  chaincodeQueryEstoniaShipCertPrivate 0 2
+
+  echo '==================END: Create Private Certificates=================='
+
+
+
+  exit 0
 
   # ==================Query Ship Part==================
 

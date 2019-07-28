@@ -43,7 +43,7 @@ function printHelp() {
   echo "      - 'generate' - generate required certificates and genesis block"
   echo "      - 'upgrade'  - upgrade the network from version 1.3.x to 1.4.0"
   echo "    -c <channel name> - channel name to use (defaults to \"mychannel\")"
-  echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 10)"
+  echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 30)"
   echo "    -d <delay> - delay duration in seconds (defaults to 3)"
   echo "    -f <docker-compose-file> - specify which docker-compose file use (defaults to docker-compose-cli.yaml)"
   echo "    -s <dbtype> - the database backend to use: goleveldb (default) or couchdb"
@@ -90,7 +90,7 @@ function askProceed() {
 # Obtain CONTAINER_IDS and remove them
 # TODO Might want to make this optional - could clear other containers
 function clearContainers() {
-  CONTAINER_IDS=$(docker ps -a | awk '($2 ~ /dev-peer.*.mycc.*/) {print $1}')
+  CONTAINER_IDS=$(docker ps -a | awk '($2 ~ /dev-peer.*/) {print $1}')
   if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" == " " ]; then
     echo "---- No containers available for deletion ----"
   else
@@ -102,7 +102,7 @@ function clearContainers() {
 # specifically the following images are often left behind:
 # TODO list generated image naming patterns
 function removeUnwantedImages() {
-  DOCKER_IMAGE_IDS=$(docker images | awk '($1 ~ /dev-peer.*.mycc.*/) {print $3}')
+  DOCKER_IMAGE_IDS=$(docker image ls | awk '($1 ~ /dev-peer.*/) {print $3}')
   if [ -z "$DOCKER_IMAGE_IDS" -o "$DOCKER_IMAGE_IDS" == " " ]; then
     echo "---- No images available for deletion ----"
   else
@@ -197,8 +197,9 @@ function networkUp() {
   fi
 
   # now run the end to end script
-  echo "Debug: Collections path: $COLLECTIONS_PATH"
-  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $COLLECTIONS_PATH $SKIP_QUERIES
+  echo "Debug: Private Collections path: $PRIVATE_COLLECTIONS_DIR"
+  echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
+  docker exec cli scripts/script.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $PRIVATE_COLLECTIONS_DIR $COLLECTIONS_PATH_SHARED $SKIP_QUERIES
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Test failed"
     exit 1
@@ -494,7 +495,7 @@ function generateChannelArtifacts() {
 OS_ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
 # timeout duration - the duration the CLI should wait for a response from
 # another container before giving up
-CLI_TIMEOUT=10
+CLI_TIMEOUT=30
 # default for delay between commands
 CLI_DELAY=3
 # channel name defaults to "mychannel"
@@ -518,7 +519,8 @@ IMAGETAG="1.4"
 CONSENSUS_TYPE="solo"
 
 ## custom env variables
-COLLECTIONS_PATH="/opt/gopath/src/github.com/chaincode/collections_config.json"
+PRIVATE_COLLECTIONS_DIR="/opt/gopath/src/github.com/chaincode/node/privateData/"
+COLLECTIONS_PATH_SHARED="/opt/gopath/src/github.com/chaincode/node/sharePrivateData/collections_config.json"
 
 # Parse commandline args
 if [ "$1" = "-m" ]; then # supports old usage, muscle memory is powerful!

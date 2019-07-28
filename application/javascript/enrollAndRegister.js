@@ -1,33 +1,44 @@
-'use strict'
+
 
 require('fabric-ca-client');
 const { FileSystemWallet, X509WalletMixin } = require('fabric-network');
 const Client = require('fabric-client');
 const path = require('path');
 
-var client = Client.loadFromConfig('../../fabric-network/connection.yaml');
-var fabricCAClient;
-var adminUser;
+let client = Client.loadFromConfig('../../fabric-network/connection.yaml');
+let fabricCAClient;
+let adminUser;
 
 const walletPath = path.join(process.cwd(), 'dma', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 console.log(`Wallet path: ${walletPath}`);
 
-adminUser = client.initCredentialStores().then((nothing) => {
+function enrollUser(enrollmentID, secret) {
+    fabricCAClient.enroll({ enrollmentID: enrollmentID, enrollmentSecret: secret }).then((enrollment) => {
+        console.log(enrollment);
+        const userIdentity = X509WalletMixin.createIdentity('DmaMSP', enrollment.certificate, enrollment.key.toBytes());
+        wallet.import('user1', userIdentity).then(() => {});
+        console.log('Successfully registered and enrolled user "user1" and imported it into the wallet');
+    }, (reason) => {
+        console.error('Failed to enroll user: ' + reason);
+    });
+}
+
+adminUser = client.initCredentialStores().then(() => {
     fabricCAClient = client.getCertificateAuthority();
     return client.getUserContext('admin', true);
 }).then((user) => {
     if (user) {
         adminUser = user;
-        console.log("Admin already exists");
+        console.log('Admin already exists');
         return client.setUserContext(adminUser);
     } else {
         return fabricCAClient.enroll({
             enrollmentID: 'admin',
             enrollmentSecret: 'adminpw',
             attr_reqs: [
-                { name: "hf.Registrar.Roles" },
-                { name: "hf.Registrar.Attributes" }
+                { name: 'hf.Registrar.Roles' },
+                { name: 'hf.Registrar.Attributes' }
             ]
         }).then((enrollment) => {
             console.log('Successfully enrolled admin user "admin"');
@@ -49,7 +60,7 @@ adminUser = client.initCredentialStores().then((nothing) => {
     console.log('Assigned the admin user to the fabric client.');
     fabricCAClient.register({ affiliation: '', enrollmentID: 'user1', role: 'client', maxEnrollments: -1 }, adminUser).then((secret) => {
         // fjysObVxluPO
-        console.log("Secret " + secret);
+        console.log('Secret ' + secret);
         enrollUser('user1', secret);
     }, (reason) => {
         if (reason.message.includes('"code":0')) {
@@ -58,18 +69,9 @@ adminUser = client.initCredentialStores().then((nothing) => {
         } else {
             console.error('Failed to register user1: ' + reason);
         }
-    })
+    });
 }).catch((err) => {
     console.error('Failed to enroll admin: ' + err);
 });
 
-function enrollUser(enrollmentID, secret) {
-    fabricCAClient.enroll({ enrollmentID: enrollmentID, enrollmentSecret: secret }).then((enrollment) => {
-        console.log(enrollment);
-        const userIdentity = X509WalletMixin.createIdentity('DmaMSP', enrollment.certificate, enrollment.key.toBytes());
-        wallet.import('user1', userIdentity);
-        console.log('Successfully registered and enrolled user "user1" and imported it into the wallet');
-    }, (reason) => {
-        console.error('Failed to enroll user: ' + reason);
-    });
-}
+
