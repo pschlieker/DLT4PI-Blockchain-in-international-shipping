@@ -20,6 +20,12 @@ app.listen(3000, () => {
  console.log("Server running on port 3000");
 });
 
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
+
 /**
  * @api {get} /queryShips/:country Request all ships registered unter the given flag
  * @apiName Query Ships by Country
@@ -28,7 +34,7 @@ app.listen(3000, () => {
  *
  * @apiSuccess {json} {status: 'ok', data: [{ship}]}
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.get("/queryShips/:country", (req, res, next) => {
     shippingClient.queryAllShipsByCountry(ccpPath, user, channelName, req.params.country).then(function(ships){
@@ -47,7 +53,7 @@ app.get("/queryShips/:country", (req, res, next) => {
  *
  * @apiSuccess {json} {status: 'ok', data: [{ship}]}
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.get("/queryShips", (req, res, next) => {
     shippingClient.queryAllShips(ccpPath, user, channelName).then(function(ships){
@@ -66,12 +72,12 @@ app.get("/queryShips", (req, res, next) => {
  *
  * @apiSuccess {json} {status: 'ok', data: {[certificate]} }
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.get("/queryCertificates/:imo", (req, res, next) => {
     shippingClient.queryCert(ccpPath, user, channelName, req.params.imo).then(function(certs){
         console.log(`Certs: ${certs}`);
-        res.json({status: 'ok', data: JSON.parse(certs)});  
+        res.json({status: 'ok', data: JSON.parse(certs)});
     }).catch(function(err){
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
@@ -94,7 +100,7 @@ app.get("/queryCertificates/:imo", (req, res, next) => {
  *
  * @apiSuccess {json} {status: 'ok'}
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.post("/createCertificate/:country", (req, res, next) => {
     let cert = req.body;
@@ -120,7 +126,7 @@ app.post("/createCertificate/:country", (req, res, next) => {
         certHash
     ).then(function(certs){
         console.log(`Created new certificate`);
-        res.json({status: 'ok'});  
+        res.json({status: 'ok'});
     }).catch(function(err){
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
@@ -144,7 +150,7 @@ app.post("/createCertificate/:country", (req, res, next) => {
  *
  * @apiSuccess {json} {status: 'ok'}
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.post("/createShip", (req, res, next) => {
     let ship = req.body;
@@ -162,7 +168,7 @@ app.post("/createShip", (req, res, next) => {
         ship.owner
     ).then(function(certs){
         console.log(`Created new Ship`);
-        res.json({status: 'ok'});  
+        res.json({status: 'ok'});
     }).catch(function(err){
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
@@ -177,7 +183,7 @@ app.post("/createShip", (req, res, next) => {
  *
  * @apiSuccess {pdffile} certificate as application/pdf
  * @apiError {json} {status: 'error', details: err}
- *  
+ *
 **/
 app.get("/getCertificate/:certHash", (req, res, next) => {
     ipfs.retrieveFile(req.params.certHash).then(function(pdfData){
