@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
-import * as axios from 'axios';
+const axios = require('axios');
+// import * as axios from 'axios';
 // import {CertificateService} from "./certificate.service";
 
 @Component({
@@ -14,19 +15,22 @@ export class CertificatesComponent implements OnInit {
   public shipCountry = '';
   public selectedCountry = '';
   public newCertificate: any = {};
-  public certificateList: any = [
-    {certificateId: '1', certificateName: 'Dangerous cargo carrying certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-    {certificateId: '2', certificateName: 'Cargo ship safety certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-    {certificateId: '3', certificateName: 'International oil prevention certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-  ];
+  public permission = undefined;
+  public certificateList: any = [];
+  // public certificateList: any = [
+  //   {certificateId: '1', certificateName: 'Dangerous cargo carrying certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
+  //   {certificateId: '2', certificateName: 'Cargo ship safety certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
+  //   {certificateId: '3', certificateName: 'International oil prevention certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
+  // ];
 
 
   constructor(private route: ActivatedRoute, private toastr: ToastrService) {
     this.route.params.subscribe(params => {
-      if (params.country && params.country !== 'undefined') {
+      if (params.country && params.country !== 'undefined' && params.shipId) {
         this.selectedCountry = params.country;
         this.shipId = params.shipId;
         this.shipCountry = params.shipCountry;
+        this.getCertificates();
       } else {
         this.selectedCountry = undefined;
         this.shipId = undefined;
@@ -35,6 +39,25 @@ export class CertificatesComponent implements OnInit {
   }
 
   ngOnInit() {
+  }
+
+  getCertificates() {
+    axios.get('http://localhost:3000/queryCertificates/' + this.shipId)
+      .then((response) => {
+        // handle success
+        if (response.data.status === 'ok') {
+          this.certificateList = response.data.data;
+          this.permission = true;
+        }
+        else {
+          this.permission = false;
+        }
+        // return response.data;
+      })
+      .catch((error) => {
+        // handle error
+        console.log(error);
+      });
   }
 
   uploadFile(event) {

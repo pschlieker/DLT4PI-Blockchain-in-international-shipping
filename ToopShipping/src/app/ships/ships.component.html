@@ -50,7 +50,7 @@
               <span class="input-group-text" id="shipId">Ship Id</span>
             </div>
             <input type="text" class="form-control" aria-label="Small" aria-describedby="shipId"
-                   (keyup)="updateShipObject('shipId', $event)">
+                   (keyup)="updateShipObject('imo', $event)">
           </div>
 
           <div class="input-group input-group-sm mb-3">
@@ -58,14 +58,38 @@
               <span class="input-group-text" id="shipName">Ship Name</span>
             </div>
             <input type="text" class="form-control" aria-label="Small" aria-describedby="shipName"
-                   (keyup)="updateShipObject('shipName', $event)">
+                   (keyup)="updateShipObject('name', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipOwner">Ship Owner</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipOwner"
+                   (keyup)="updateShipObject('owner', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipHomeport">Ship Home Port</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipHomeport"
+                   (keyup)="updateShipObject('homeport', $event)">
+          </div>
+
+          <div class="input-group input-group-sm mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="shipTonnage">Ship Tonnage</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipTonnage"
+                   (keyup)="updateShipObject('tonnage', $event)">
           </div>
 
           <div class="input-group input-group-sm mb-3">
             <div class="input-group-prepend">
               <span class="input-group-text" id="shipCountry">Ship Country</span>
             </div>
-            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipCountry" [value]="newShip.shipCountry" disabled>
+            <input type="text" class="form-control" aria-label="Small" aria-describedby="shipCountry" [value]="newShip.flag" disabled>
           </div>
         </div>
         <div class="modal-footer">
