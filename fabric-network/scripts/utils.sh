@@ -121,7 +121,6 @@ installChaincode() {
   VERSION=${3:-1.0}
   set -x
   peer chaincode install -n generalData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalData/ >&log.txt
-  peer chaincode install -n generalDataSolo -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalDataSolo/ >&log.txt
   peer chaincode install -n sharePrivateData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}sharePrivateData/ >&log.txt
 
   #Only install the chaincode on the peers running it
@@ -152,8 +151,7 @@ instantiateChaincode() {
   # the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
     peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
     
     #Only instatiate the chaincode on the peers running it
@@ -169,8 +167,7 @@ instantiateChaincode() {
     set +x
   else
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
     peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
     
     #Only instatiate the chaincode on the peers running it
@@ -291,8 +288,34 @@ parsePeerConnectionParameters() {
   PEERS="$(echo -e "$PEERS" | sed -e 's/^[[:space:]]*//')"
 }
 
+# chaincodeQueryEstoniaShipCert <peer> <org> ...
+chaincodeCreateEstoniaShipCertPrivate() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
+  local rc=1
+  local starttime=$(date +%s)
+
+  # continue to poll
+  # we either get a successful response, or reach TIMEOUT
+  while
+    test "$(($(date +%s) - starttime))" -lt "$TIMEOUT" -a $rc -ne 0
+  do
+    sleep $DELAY
+    echo "Attempting to createPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
+    set -x
+    peer chaincode invoke -C $CHANNEL_NAME -n privateDataVta -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
+    res=$?
+    set +x
+  done
+  echo
+  cat log.txt
+  echo "===================== Query finished on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+}
+
 # chaincodeQueryDenmarkShipCert <peer> <org> ...
-chaincodeQueryDenmarkShipCert() {
+chaincodeQueryDenmarkShipCertPrivate() {
   PEER=$1
   ORG=$2
   setGlobals $PEER $ORG
@@ -308,7 +331,7 @@ chaincodeQueryDenmarkShipCert() {
     sleep $DELAY
     echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n privateDataDma -c '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}' >&log.txt
     res=$?
     set +x
   done
@@ -318,7 +341,7 @@ chaincodeQueryDenmarkShipCert() {
 }
 
 # chaincodeQueryEstoniaShipCert <peer> <org> ...
-chaincodeQueryEstoniaShipCert() {
+chaincodeQueryEstoniaShipCertPrivate() {
   PEER=$1
   ORG=$2
   setGlobals $PEER $ORG
@@ -334,7 +357,7 @@ chaincodeQueryEstoniaShipCert() {
     sleep $DELAY
     echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n privateDataVta -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
     res=$?
     set +x
   done
@@ -464,13 +487,67 @@ chaincodeInvokeInitLedger() {
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["initLedger"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["initLedger"]}' >&log.txt   
     res=$?
     set +x
   fi
   cat log.txt
   verifyResult $res "Invoke execution on $PEERS failed "
   echo "===================== Invoke transaction chaincodeInvokeInitLedger successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
+# chaincodeInvokeInitLedgerPrivateDma <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeInitLedgerPrivateDma() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataDma $PEER_CONN_PARMS -c '{"Args":["initPrivateDataForDma"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataDma $PEER_CONN_PARMS -c '{"Args":["initPrivateDataForDma"]}' >&log.txt   
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction initPrivateDataForDma successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
+# chaincodeInvokeInitLedgerPrivateVta <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeInitLedgerPrivateVta() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta $PEER_CONN_PARMS -c '{"Args":["initPrivateDataForVta"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataVta $PEER_CONN_PARMS -c '{"Args":["initPrivateDataForVta"]}' >&log.txt   
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction initPrivateDataForVta successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
   echo
 }
 
