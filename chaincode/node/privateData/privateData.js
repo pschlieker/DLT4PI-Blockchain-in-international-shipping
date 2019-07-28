@@ -180,7 +180,14 @@ let Chaincode = class {
   
           // === Get the certificates of the ship from the state ===
           let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
-          let certs = JSON.parse(certsAsBytes);
+
+          let certs;
+          if(certsAsBytes.length == 0){
+            certs = [];
+          }else{
+            certs = JSON.parse(certsAsBytes);
+          }
+
           console.log('List of certificates: ' + certs);
           // === Push the new certificates into the list of certificates ===
           certs.push(newCert);
