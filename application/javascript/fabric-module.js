@@ -7,7 +7,7 @@ const walletPath = path.join(process.cwd(), 'dma', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
-module.exports = {
+const self = module.exports = {
 
     /**
      * Execute queryShip chaincode
@@ -250,7 +250,7 @@ module.exports = {
 
             //Decide were to get the certificate from
             //If it is own ship, private certificate, if not shared certificate
-            if(requestingCountry == country){
+            if(requestingCountry === country){
                 console.log("Getting certificate from private collection");
                 return this.queryPrivateCert(ccpPath, username, channelName, imo);
             }else{
@@ -453,48 +453,33 @@ module.exports = {
     async shareShipCertificate(cccPath, username, channelName, providingCountry, requestingCountry, imo){
         let positionCheck = await this.verifyLocation(cccPath, username, channelName, requestingCountry, imo);
 
-        if(positionCheck){
-            try {
-                const userExists = await wallet.exists(username);
-                if (!userExists) {
-                    console.log(`An identity for the user ${username} does not exist in the wallet`);
-                    console.log('Run the registerUser before retrying');
-                    return;
-                }
-    
-                // Create a new gateway for connecting to our peer node.
-                const gateway = new Gateway();
-                await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
-    
-                // Get the network (channel) our contract is deployed to.
-                const network = await gateway.getNetwork(channelName);
- 
-                   
-                // Get the country of the queried ship
-                let contract = network.getContract('generalData');
-                const ship = await contract.evaluateTransaction('queryShip', country, imo);
-                console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
-                const targetCountry = JSON.parse(ship.toString()).flag;
-                console.log('Target Country: ' + targetCountry);
-    
-                // Check the location of the ship by calling the verifyLocation chaincode
-                contract = network.getContract('generalData');
-                const isWithinBorder = await contract.evaluateTransaction('verifyLocation', imo, requester);
-                console.log(`Evaluated verifyLocation transaction, result is: ${isWithinBorder.toString()}`);
-    
-                // If consensus is reached on the location of the ship (i.e. ship is within the requester's borders)
-                if (isWithinBorder) {
-                    await this.grantCertAccess(ccpPath, username, channelName, requester, targetCountry);
-                    console.log(`Certificates of ship ${imo}: Access Granted`);
-                } else {
-                    console.log(`The ship ${imo} is not within ${requester}'s borders`);
-                }
-    
-            } catch (error) {
-                console.error(`Failed to evaluate transaction: ${error}`);
-            }
-        }
+        // if(positionCheck.toString() === 'true'){
 
+        if(true){
+            console.log("Ship within reach of country!");
+
+            certsAsByte = await this.queryPrivateCert(cccPath, username, channelName, imo);
+            certs = JSON.parse(certsAsByte);
+                
+            certs.forEach(cert => {
+                console.log(cert);
+
+                //The function it self, if called separatly seems to work fine!
+                //Only crashes when being called from within
+                self.createSharedShipCertificate(
+                    cccPath,
+                    username,
+                    channelName,
+                    providingCountry,
+                    cert.certName,
+                    cert.certNum,
+                    cert.imo,
+                    cert.issueDate,
+                    cert.expiryDate,
+                    cert.certHash
+                );
+            });
+        }
     },
 
     /**
