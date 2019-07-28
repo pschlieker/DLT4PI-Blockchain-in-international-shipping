@@ -1,6 +1,6 @@
 {
 	"name": "privateData",
-	"version": "0.0.1",
+	"version": "1.0",
 	"description": "shipping chaincode for private data implemented in node.js",
 	"engines": {
 		"node": ">=8.4.0",
