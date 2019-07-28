@@ -58,7 +58,7 @@ let Chaincode = class {
      * create initial shared private data for the Vta & Dma Organisation
      * Endorsement Policy: "OR('DmaMSP.member', 'VtaMSP.member')"
      */
-    async initSharedPrivateLedge(stub, args) {
+    async initSharedPrivateLedger(stub, args) {
         console.info('============= START : Initialize Dma Vta Shared Private Data ===========');
         // === Create PrivateShipCertificates private data collections, save to state ===
         let SharedDenmarkAndEstoniaShipCertificates = [
