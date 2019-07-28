@@ -59,17 +59,18 @@ app.get("/queryShips", (req, res, next) => {
 });
 
 /**
- * @api {get} /queryCertificates/:imo Query a list of all certificates for a specific ship
+ * @api {get} /queryCertificates/:country/:imo Query a list of all certificates for a specific ship
  * @apiName Query Certificates for Ship
  *
+ * @apiParam {String} Flag state of ship
  * @apiParam {String} imo (ID of Ship)
  *
  * @apiSuccess {json} {status: 'ok', data: {[certificate]} }
  * @apiError {json} {status: 'error', details: err}
  *  
 **/
-app.get("/queryCertificates/:imo", (req, res, next) => {
-    shippingClient.queryCert(ccpPath, user, channelName, req.params.imo).then(function(certs){
+app.get("/queryCertificates/:country/:imo", (req, res, next) => {
+    shippingClient.queryCert(ccpPath, user, channelName, req.params.country, req.params.imo).then(function(certs){
         console.log(`Certs: ${certs}`);
         res.json({status: 'ok', data: JSON.parse(certs)});  
     }).catch(function(err){

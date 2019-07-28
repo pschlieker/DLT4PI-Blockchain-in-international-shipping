@@ -222,7 +222,7 @@ module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
-     * @param {string} country - imo number of the ship
+     * @param {string} country - country of the ship
      * @param {string} imo - imo number of the ship
      */
     async queryCert(ccpPath, username, channelName, country, imo) {
