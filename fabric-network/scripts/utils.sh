@@ -151,43 +151,39 @@ instantiateChaincode() {
   ORG=$2
   setGlobals $PEER $ORG
   VERSION=${3:-1.0}
+  set -x
+  peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                                 >&log.txt
+  peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')"  --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
 
-  # while 'peer chaincode' command can get the orderer endpoint from the peer
-  # (if join was successful), let's supply it directly as we know it using
-  # the "-o" option
-  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
-    set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                                   >&log.txt
-    #peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')"  --collections-config ${COLLECTIONS_PATH_SHARED}   >&log.txt
-    
-    #peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-vta.json >&log.txt
-
-    # instantiate dma-only code
-    ORG=1
-    setGlobals $PEER $ORG
-    #peer chaincode instantiate -o orderer.emsa.chaincodeInvokeInitLedger.eu:7050 -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-dma.json >&log.txt
-
-    res=$?
-    set +x
-  else
-    set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                                 >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')"  --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
-
-    if [ $ORG == "1" ]; then
-      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-dma.json >&log.txt
-    fi
-
-    if [ $ORG == "2" ]; then
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-vta.json >&log.txt
-    fi
-
-    res=$?
-    set +x
-  fi
+  res=$?
+  set +x
   cat log.txt
   verifyResult $res "Chaincode instantiation on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' failed"
   echo "===================== Chaincode is instantiated on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
+
+instantiatePrivateChaincode() {
+  PEER=$1
+  ORG=$2
+  setGlobals $PEER $ORG
+  VERSION=${3:-1.0}
+
+  set -x
+
+  if [ $ORG == "1" ]; then
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-dma.json >&log.txt
+  fi
+
+  if [ $ORG == "2" ]; then
+  peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -v ${VERSION} -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[""]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-vta.json >&log.txt
+  fi
+  res=$?
+  set +x
+  cat log.txt
+  verifyResult $res "Chaincode instantiation on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' failed"
+  echo "===================== Private Chaincode instantiated on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME' ===================== "
   echo
 }
 

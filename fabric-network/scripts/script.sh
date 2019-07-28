@@ -103,7 +103,8 @@ echo "Instantiating chaincode on peer0.dma.dk ..."
 echo "Debug: Private Collections dir: $PRIVATE_COLLECTIONS_DIR"
 echo "Debug: Shared Collections path: $COLLECTIONS_PATH_SHARED"
 instantiateChaincode 0 1
-instantiateChaincode 0 2
+instantiatePrivateChaincode 0 1
+instantiatePrivateChaincode 0 2
 
 
 # Initialize chaincode on peer0.dma.dk and peer0.veeteedeamet.ee
