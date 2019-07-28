@@ -453,6 +453,7 @@ const self = module.exports = {
     async shareShipCertificate(cccPath, username, channelName, providingCountry, requestingCountry, imo){
         let positionCheck = await this.verifyLocation(cccPath, username, channelName, requestingCountry, imo);
 
+        //TODO Integrate & Test Position check!
         // if(positionCheck.toString() === 'true'){
 
         if(true){
@@ -460,13 +461,11 @@ const self = module.exports = {
 
             certsAsByte = await this.queryPrivateCert(cccPath, username, channelName, imo);
             certs = JSON.parse(certsAsByte);
-                
-            certs.forEach(cert => {
-                console.log(cert);
 
-                //The function it self, if called separatly seems to work fine!
-                //Only crashes when being called from within
-                self.createSharedShipCertificate(
+            for(i =0; i < certs.length; i++){
+                cert = certs[i];
+
+                await self.createSharedShipCertificate(
                     cccPath,
                     username,
                     channelName,
@@ -478,7 +477,7 @@ const self = module.exports = {
                     cert.expiryDate,
                     cert.certHash
                 );
-            });
+            }                
         }
     },
 
