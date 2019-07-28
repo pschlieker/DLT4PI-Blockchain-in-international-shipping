@@ -1,6 +1,16 @@
-<h3 class="heading-margin" *ngIf="shipId !== undefined">Certificate list for ship ID #  {{shipId}}</h3>
+<div *ngIf="permission == undefined">
+  <h3 class="heading-margin">Please wait...</h3>
+</div>
+<div *ngIf="permission == false">
+  <h3 class="heading-margin">You don't have permission to view this ship's certificates!</h3>
+  <button type="button" class="btn-sm btn-secondary button-margin" routerLink="/ships/{{selectedCountry}}">
+    Return to ships list
+  </button>
+</div>
+<div *ngIf="permission == true">
+  <h3 class="heading-margin" *ngIf="shipId !== undefined">Certificate list for ship ID #  {{shipId}}</h3>
 
-<div *ngIf="shipId !== undefined">
+  <div *ngIf="shipId !== undefined">
   <button type="button" class="btn-sm btn-secondary button-margin" routerLink="/ships/{{selectedCountry}}">
     Return to ships list
   </button>
@@ -18,19 +28,19 @@
         <th scope="col">Certificate ID</th>
         <th scope="col">Certificate name</th>
         <th scope="col"></th>
-        <th *ngIf="selectedCountry == shipCountry" scope="col"></th>
+        <!--<th *ngIf="selectedCountry == shipCountry" scope="col"></th>-->
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let certificate of certificateList">
-        <td scope="col">{{certificate.certificateId}}</td>
-        <td scope="col">{{certificate.certificateName}}</td>
+        <td scope="col">{{certificate.certNum}}</td>
+        <td scope="col">{{certificate.certName}}</td>
         <td scope="col"><button type="button" class="btn-sm btn-primary" (click)="viewCertificate(certificate.file)">
           View Certificate</button></td>
-        <td *ngIf="selectedCountry == shipCountry" scope="col">
-          <button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">
-          Delete Certificate</button></td>
-      </tr>
+        <!--<td *ngIf="selectedCountry == shipCountry" scope="col">-->
+          <!--<button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">-->
+          <!--Delete Certificate</button></td>-->
+      <!--</tr>-->
     </tbody>
   </table>
 
@@ -63,4 +73,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>
