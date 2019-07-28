@@ -1,4 +1,3 @@
-'use strict'
 
 var express = require("express");
 var bodyParser = require('body-parser')
@@ -17,7 +16,7 @@ const user = 'user1';
 const channelName = 'mychannel';
 
 app.listen(3000, () => {
- console.log("Server running on port 3000");
+    console.log('Server running on port 3000');
 });
 
 app.use(function(req, res, next) {
@@ -36,7 +35,7 @@ app.use(function(req, res, next) {
  * @apiError {json} {status: 'error', details: err}
  *
 **/
-app.get("/queryShips/:country", (req, res, next) => {
+app.get('/queryShips/:country', (req, res, next) => {
     shippingClient.queryAllShipsByCountry(ccpPath, user, channelName, req.params.country).then(function(ships){
             res.json({status: 'ok', data: JSON.parse(ships)});
     }).catch(function(err){

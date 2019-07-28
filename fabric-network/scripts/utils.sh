@@ -552,18 +552,18 @@ chaincodeInvokeInitLedgerShared() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedge"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedger"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedge"]}' >&log.txt   
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedger"]}' >&log.txt
     res=$?
     set +x
   fi
   cat log.txt
   verifyResult $res "Invoke execution on $PEERS failed "
-  echo "===================== Invoke transaction initSharedPrivateLedge successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo "===================== Invoke transaction initSharedPrivateLedger successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
   echo
 }
 
