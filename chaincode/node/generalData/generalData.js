@@ -2,6 +2,7 @@ const shim = require('fabric-shim');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
 const request = require('request');
+const rp = require('request-promise');
 const ClientIdentity = shim.ClientIdentity;
 
 class MaritimeAuthority {
@@ -117,7 +118,9 @@ let Chaincode = class {
         // Get the country's borders
 
         let maAsBytes = await stub.getState(country);
-        console.log(maAsBytes.toString());
+        let maForLog = JSON.parse(maAsBytes);
+        maForLog.borders = [];
+        console.log(maForLog.toString());
         let borders = JSON.parse(maAsBytes).borders;
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -125,18 +128,16 @@ let Chaincode = class {
 
         // TODO: connect to external api
         let api = `http://oracle/${imo}`;
-        request(api, { json: true }, (err, res, body) => {
-            if (err || res.statusCode !== 200) { throw new Error(err); }
-            let shipLat = Number(body.entries[0].lat);
-            let shipLng = Number(body.entries[0].lng);
-            // check if the location is within the country's maritime borders
-            if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
-                console.info('============= END : Verify Location ===========');
-                return shim.success(Buffer.from('true'));
-            } else {
-                return shim.success(Buffer.from('false'));
-            }
-        });
+        const result = await rp(api, { json: true }).catch((err) => {console.error(err);});
+        let shipLat = Number(result.entries[0].lat);
+        let shipLng = Number(result.entries[0].lng);
+        if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
+            console.info('============= END : Verify Location (true) ===========');
+            return Buffer.from('true');
+        } else {
+            console.info('============= END : Verify Location (false) ===========');
+            return Buffer.from('false');
+        }
     }
 
     // ==========================================================================
@@ -187,7 +188,9 @@ let Chaincode = class {
         let imo = args[1];
 
         let maAsBytes = await stub.getState(country);
-        console.log(maAsBytes.toString());
+        let maForLog = JSON.parse(maAsBytes);
+        maForLog.borders = maForLog.borders.splice(3, borders.length-4);
+        console.log(maForLog.toString());
         let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -242,7 +245,9 @@ let Chaincode = class {
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
         }
-        console.log(maAsBytes.toString());
+        let maForLog = JSON.parse(maAsBytes);
+        maForLog.borders = maForLog.borders.splice(3, borders.length-4);
+        console.log(maForLog.toString());
         console.info('============= END : Query Maritime Authority ===========');
         return maAsBytes;
     }
