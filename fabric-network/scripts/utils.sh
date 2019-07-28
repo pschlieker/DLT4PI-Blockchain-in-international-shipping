@@ -544,6 +544,33 @@ chaincodeInvokeInitLedger() {
   echo
 }
 
+# chaincodeInvokeInitLedger <peer> <org> ...
+# Accepts as many peer/org pairs as desired and requests endorsement from each
+chaincodeInvokeInitLedgerShared() {
+  parsePeerConnectionParameters $@
+  res=$?
+  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
+
+  # while 'peer chaincode' command can get the orderer endpoint from the
+  # peer (if join was successful), let's supply it directly as we know
+  # it using the "-o" option
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedge"]}' >&log.txt
+    res=$?
+    set +x
+  else
+    set -x
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["initSharedPrivateLedge"]}' >&log.txt   
+    res=$?
+    set +x
+  fi
+  cat log.txt
+  verifyResult $res "Invoke execution on $PEERS failed "
+  echo "===================== Invoke transaction initSharedPrivateLedge successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
+  echo
+}
+
 # chaincodeInvokeInitLedgerPrivateDma <peer> <org> ...
 # Accepts as many peer/org pairs as desired and requests endorsement from each
 chaincodeInvokeInitLedgerPrivateDma() {
@@ -595,33 +622,6 @@ chaincodeInvokeInitLedgerPrivateVta() {
   cat log.txt
   verifyResult $res "Invoke execution on $PEERS failed "
   echo "===================== Invoke transaction initPrivateDataForVta successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
-  echo
-}
-
-# chaincodeInvokeCreateDenmarkCert <peer> <org> ...
-# Accepts as many peer/org pairs as desired and requests endorsement from each
-chaincodeInvokeCreateDenmarkCert() {
-  parsePeerConnectionParameters $@
-  res=$?
-  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
-
-  # while 'peer chaincode' command can get the orderer endpoint from the
-  # peer (if join was successful), let's supply it directly as we know
-  # it using the "-o" option
-  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
-    set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
-    res=$?
-    set +x
-  else
-    set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
-    res=$?
-    set +x
-  fi
-  cat log.txt
-  verifyResult $res "Invoke execution on $PEERS failed "
-  echo "===================== Invoke transaction chaincodeInvokeCreateCert successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
   echo
 }
 

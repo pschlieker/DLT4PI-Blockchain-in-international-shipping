@@ -111,6 +111,7 @@ instantiateChaincode 0 2
 chaincodeInvokeInitLedger 0 1 0 2
 chaincodeInvokeInitLedgerPrivateDma 0 1
 chaincodeInvokeInitLedgerPrivateVta 0 2
+chaincodeInvokeInitLedgerShared 0 1 0 2
 
 
 if [ "$SKIP_QUERIES" != "true" ]; then
