@@ -107,7 +107,7 @@ app.post("/createCertificate/:country", (req, res, next) => {
      * certHash = await ipfs.uploadFile('mssing buffer');
      */
 
-    shippingClient.createShipCertificate(
+    shippingClient.createPrivateShipCertificate(
         ccpPath,
         user,
         channelName,

@@ -111,11 +111,10 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network.
-            const contractName = 'mycc';
+            const contractName = 'generalData';
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
-            // queryAllShipsByCountry - requires 1 argument, e.g. ("queryAllShipsByCountry", "Denmark")
             const transactionName = 'queryAllShips';
             const result = await contract.evaluateTransaction(transactionName);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
