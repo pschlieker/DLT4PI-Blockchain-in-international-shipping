@@ -25,8 +25,8 @@ async function runQueryTests(){
     console.log('########## Query certs of Estonia ##########');
     await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
 
-    console.log('########## Request certs of Estonia ##########');
-    await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+    // console.log('########## Request certs of Estonia ##########');
+    // await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
 
     // console.log('########## Verify Location ##########');
     // await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
@@ -39,7 +39,6 @@ async function runQueryTests(){
 
 async function createShipTests(){
     console.log('########## START CREATE TESTS ##########');
-
 
     console.log('########## Create Ship for Denmark ##########');
     await shippingClient.createShip(ccpPath, 'user1', 'mychannel', '1234567', 'GreatShip', 'Container Ship', 'Denmark', 'BlockPort', '1234', 'Blocky');
@@ -75,8 +74,8 @@ async function addCertficiate(){
 }
 
 async function main() {
-    // await runQueryTests();
-    // await createShipTests();
+    await runQueryTests();
+    await createShipTests();
     await addCertficiate();
 }
 

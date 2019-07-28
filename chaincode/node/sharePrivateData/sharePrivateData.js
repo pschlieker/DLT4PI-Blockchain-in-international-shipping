@@ -39,27 +39,13 @@ let Chaincode = class {
         }
     }
 
-    // === only Maritime Authority peers could access this method ===
-    // async accessCtrlOnlyMA(stub) {
-    //     let cid = new ClientIdentity(stub);
-    //     let mspid = cid.getMSPID();
-    //     switch(mspid) {
-    //     case 'DmaMSP':
-    //         return true;
-    //     case 'VtaMSP':
-    //         return true;
-    //     default:
-    //         throw new Error('Wrong MSP');
-    //     }
-    // }
-
     // ==========================================================================
     // readSharedShipCertificate - return certs in Bytes from private data collection
     //   that is shared between two orgs
     // Endorsement Policy: OR('OrgX.peer', 'OrgY.peer')
     // ==========================================================================
     async readSharedShipCertificate(stub, args) {
-        // e.g. '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}'
+        // e.g. '{"Args":["readSharedShipCertificate", "Denmark", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) ex: Denmark, 9274848');
