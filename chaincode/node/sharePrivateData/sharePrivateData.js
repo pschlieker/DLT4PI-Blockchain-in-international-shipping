@@ -29,7 +29,7 @@ let Chaincode = class {
     // Init method is called when chaincode "shipping" is instantiated
     // ===========================
     async Init() {
-        console.info('=========== Instantiated shipping chaincode ===========');
+        console.info('=========== Instantiated shipping chaincode Shared Data===========');
         return shim.success();
     }
 
@@ -54,6 +54,32 @@ let Chaincode = class {
         }
     }
 
+     /**
+     * create initial shared private data for the Vta & Dma Organisation
+     * Endorsement Policy: "OR('DmaMSP.member', 'VtaMSP.member')"
+     */
+    async initSharedPrivateLedge(stub, args) {
+        console.info('============= START : Initialize Dma Vta Shared Private Data ===========');
+        // === Create PrivateShipCertificates private data collections, save to state ===
+        let SharedDenmarkAndEstoniaShipCertificates = [
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
+        ];
+
+        // === Save SharedDenmarkAndEstoniaShipCertificates to state ===
+        try {
+            for (let i = 0; i < SharedDenmarkAndEstoniaShipCertificates.length; i = i+2) {
+                let imo = SharedDenmarkAndEstoniaShipCertificates[i].imo.toString();
+                let certAsBytes = Buffer.from(JSON.stringify([SharedDenmarkAndEstoniaShipCertificates[i], SharedDenmarkAndEstoniaShipCertificates[i + 1]]));
+                await stub.putPrivateData('SharedDenmarkAndEstoniaShipCertificates', imo, certAsBytes);
+                console.info(`Added <--> ${SharedDenmarkAndEstoniaShipCertificates[i].certName} and ${SharedDenmarkAndEstoniaShipCertificates[i + 1].certName} to Ship ${SharedDenmarkAndEstoniaShipCertificates[i].imo} and ${SharedDenmarkAndEstoniaShipCertificates[i + 1].imo}`);
+            }
+        } catch (err) {
+            throw new Error('Cannot initialize SharedShipCertificates: ' + err)
+        }
+        console.info('============= END : Initialize Dma Vta Shared Private Data ===========');
+    }
+
     // ==========================================================================
     // readSharedShipCertificate - return certs in Bytes from private data collection
     //   that is shared between two orgs
@@ -63,21 +89,13 @@ let Chaincode = class {
         // e.g. '{"Args":["readSharedShipCertificate", "Denmark", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
         if (args.length !== 2) {
-            throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) ex: Denmark, 9274848');
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (countryies, imo number) ex: DenmarkAndEstonia, 9274848');
         }
-        let country = args[0];
+        let countryies = args[0];
         let imo = args[1];
 
-        // === Check whether the ship exists from chaincode state ===
-        let maAsBytes = await stub.getState(country);
-        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
-        console.log(ship.toString());
-        if (!ship || ship.length <= 1) {
-            throw new Error('Error occured retrieving the ship');
-        }
-
         // === Get the ship certificate from chaincode state ===
-        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`Shared${countryies}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
         return certsAsBytes;
     }
@@ -96,38 +114,30 @@ let Chaincode = class {
 
         // === Retrieve Transient Data ===
         let transientData = stub.getTransient();
-        console.log(transientData);
-        // convert into buffer
-        const buffer = new Buffer(transientData.map.certificate.value.toArrayBuffer());
-        // from buffer into JSON
-        console.log(buffer.toString());
-        const certificate = JSON.parse(transientData);
-        console.log(certificateJSON);
+         // === convert into string ===
+         console.log('===================================================')
+         let certName = transientData.map.certName.value.toString("utf8"),
+             certNum = transientData.map.certNum.value.toString("utf8"),
+             issueDate = transientData.map.issueDate.value.toString("utf8"),
+             expiryDate = transientData.map.expiryDate.value.toString("utf8"),
+             certHash = transientData.map.certHash.value.toString("utf8")
 
         // === Set Parameters ===
-        let country = args[0];
+        let countries = args[0];
         let imo = args[1];
 
         // === Create certificate ===
         let newCert = new PrivateShipCertificate('privShipCert',
-            certificateJSON.certName,
-            certificateJSON.certNum,
-            certificateJSON.imo,
-            certificateJSON.issueDate,
-            certificateJSON.expiryDate,
-            certificateJSON.certHash);
+            certName, 
+            certNum, 
+            imo,
+            issueDate,
+            expiryDate,
+            certHash);
         console.log("Created new certificate!");
 
-        // === Check whether the ship exists from chaincode state ===
-        let maAsBytes = await stub.getState(country);
-        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
-        console.log('Ship exists: ' + ship.toString());
-        if (!ship || ship.length <= 1) {
-            throw new Error('Error occured retrieving the ship');
-        }
-
         // === Get the certificates of the ship from the state ===
-        let certsAsBytes = await stub.getPrivateData(`collection${country}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`Shared${countries}ShipCertificates`, imo);
         let certs = JSON.parse(certsAsBytes);
         console.log('List of certificates: ' + certs);
         // === Push the new certificates into the list of certificates ===
@@ -135,7 +145,7 @@ let Chaincode = class {
 
         // === Save PrivateDenmarkShipCertificates to state ===
         certsAsBytes = Buffer.from(JSON.stringify(certs));
-        await stub.putPrivateData(`collection${country}ShipCertificates`, imo, certsAsBytes);
+        await stub.putPrivateData(`Shared${countries}ShipCertificates`, imo, certsAsBytes);
         console.info(`Added <--> ${args[0]} to ${imo}`);
         console.info('============= END : Creating Ship Certificate ===========');
     }

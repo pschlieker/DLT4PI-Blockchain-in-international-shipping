@@ -7,16 +7,7 @@ const walletPath = path.join(process.cwd(), 'dma', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
-let chaincodeVer = 'v1';
-
 module.exports = {
-
-    // add chaincode version everytime
-    getNewChaincodeVer() {
-        let newVer = chaincodeVer.charAt(0) + (parseInt(chaincodeVer.charAt(1)) + 1);
-        chaincodeVer = newVer;
-        return chaincodeVer;
-    },
 
     /**
      * Execute queryShip chaincode
@@ -98,15 +89,13 @@ module.exports = {
     },
 
     /**
-     * Execute grantCertAccess to grant the private certificate collection to another Marititme Authority
-     * e.g. grantCertAccess('connectionProfile.json', 'username', 'channelName','Denmark', 'Estonia)
+     * Execute queryCert chaincode
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
-     * @param {string} requester - the country name of the requesting authority
-     * @param {string} target - the country name of the queried ship
+     * @param {string} imo - imo number of the ship
      */
-    async grantCertAccess(ccpPath, username, channelName, requester, target) {
+    async queryPrivateCert(ccpPath, username, channelName, imo) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -115,84 +104,48 @@ module.exports = {
                 return;
             }
 
-            let requesterName = requester.charAt(0).toUpperCase() + requester.slice(1).toLowerCase();
-            let targetName = target.charAt(0).toUpperCase() + target.slice(1).toLowerCase();
-            if (targetName === 'Denmark') {
-                targetName = 'Dma';
-            } else if (targetName === 'Estonia') {
-                targetName = 'Vta';
-            }
-            // TODO check this path
-            let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config-vta.json');
-            // read the original endorsement policy
-            let config = JSON.parse(await fs.readFileSync(collectionConfigPath));
-            config.forEach((collection) => {
-                if (collection.name === `collection${targetName}ShipCertificates`) {
-                    // OR('DmaMSP.member') change to OR('DmaMSP.member', 'VtaMSP.member')
-                    let policy = collection.policy;
-                    let orginalPolicy = policy.substring(0, policy.lastIndexOf('\'') + 1);
-                    let requesterMSP = requesterName + 'MSP.member';
-                    let newPolicy = orginalPolicy + `, '${requesterMSP}')`;
-                    collection.policy = newPolicy;
-                    console.log('New policy will be: ' + newPolicy);
-                }
-            });
-            // write the new endorsement policy to the file
-            await fs.writeFileSync(collectionConfigPath, JSON.stringify(config, null, 2));
-            console.log('New policy is written');
-
             // Create a new gateway for connecting to our peer node.
             const gateway = new Gateway();
             await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
 
-            // Get the identity (client) connected to the gateway
-            const client = gateway.getClient();
-            // Get new chaincode version
-            const chaincodeVersion = this.getNewChaincodeVer();
-            const peers = client.getPeersForOrg(gateway.getClient().getMspid());
-            // Install chaincode
-            await client.installChaincode({
-                targets: peers,
-                chaincodeId: 'shipping',
-                chaincodeType: 'node',
-                chaincodePath: '../../chaincode/node',
-                chaincodeVersion: chaincodeVersion, // every upgrade requires new chaincode version number
-                channelNames: [channelName]
-            });
-            console.log('Chaincode is installed');
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
 
-            // Get the channel our contract is deployed to.
-            const channel = await client.getChannel();
-            // Upgrade chaincode
-            let proposalResponse = await channel.sendUpgradeProposal({
-                chaincodeId: 'shipping',
-                chaincodeType: 'node',
-                chaincodeVersion: chaincodeVersion,
-                'collections-config': collectionConfigPath,
-                txId: client.newTransactionID()
-            });
-            console.log(proposalResponse);
+            // Get the country of the logged user
+            const Mspid = gateway.getClient().getMspid();
+            let country;
+            let contractName = 'privateData';
+            if (Mspid === 'DmaMSP') {
+                country = 'Denmark';
+                contractName += "Dma";
+            } else if (Mspid === 'VtaMSP') {
+                country = 'Estonia';
+                contractName += "Vta";
+            }
 
-            console.info('============= START : Chaincode Upgrade ===========');
-            const transactionResponse = await channel.sendTransaction({
-                proposalResponses: proposalResponse[0],
-                proposal: proposalResponse[1]
-            });
+            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
+            const contract = network.getContract(contractName);
 
-            console.log(transactionResponse);
+            // Evaluate the specified transaction.
+            // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
+            const transactionName = 'readPrivateShipCertificate';
+            const result = await contract.evaluateTransaction(transactionName, country, imo);
+            console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
+            return result;
+
         } catch (error) {
-            console.error(`Failed to send transaction: ${error}`);
+            console.error(`Failed to evaluate transaction: ${error}`);
         }
     },
 
-    /**
+     /**
      * Execute queryCert chaincode
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
      * @param {string} imo - imo number of the ship
      */
-    async queryCert(ccpPath, username, channelName, imo) {
+    async querySharedCert(ccpPath, username, channelName, imo) {
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {
@@ -209,26 +162,61 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
-            const contract = network.getContract('privateData');
+            const contract = network.getContract("sharePrivateData");
 
-            // Get the country of the logged user
-            const Mspid = gateway.getClient().getMspid();
-            let country;
-            console.log(Mspid);
-            if (Mspid === 'DmaMSP') {
-                country = 'Denmark';
-            } else if (Mspid === 'VtaMSP') {
-                country = 'Estonia';
-            }
-            console.log(country);
+            //Should be later replaced by the respective countires obtained
+            let countries = "DenmarkAndEstonia";
 
             // Evaluate the specified transaction.
             // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
-            const transactionName = 'readPrivateShipCertificate';
-            const result = await contract.evaluateTransaction(transactionName, country, imo);
+            const transactionName = 'readSharedShipCertificate';
+            const result = await contract.evaluateTransaction(transactionName, countries, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
 
+        } catch (error) {
+            console.error(`Failed to evaluate transaction: ${error}`);
+        }
+    },
+
+    /**
+     * Execute queryCert chaincode
+     * @param {string} ccpPath - path to connection profile
+     * @param {string} username - username of the peer
+     * @param {string} channelName
+     * @param {string} country - imo number of the ship
+     * @param {string} imo - imo number of the ship
+     */
+    async queryCert(ccpPath, username, channelName, country, imo) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
+
+            // Get the country of the logged user
+            const Mspid = gateway.getClient().getMspid();
+            let requestingCountry;
+            console.log(Mspid);
+            if (Mspid === 'DmaMSP') {
+                requestingCountry = 'Denmark';
+            } else if (Mspid === 'VtaMSP') {
+                requestingCountry = 'Estonia';
+            }
+
+            //Decide were to get the certificate from
+            //If it is own ship, private certificate, if not shared certificate
+            if(requestingCountry == country){
+                return this.queryPrivateCert(ccpPath, username, channelName, imo);
+            }else{
+                return this.querySharedCert(ccpPath, username, channelName, imo);
+            }
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);
         }
@@ -280,7 +268,7 @@ module.exports = {
     },
 
     /**
-     * Create a ship certificate and store it into PDC of that maritime authority
+     * Create a ship certificate and store it into private PDC of that maritime authority
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
@@ -292,8 +280,64 @@ module.exports = {
      * @param {string} expiryDate
      * @param {string} certHash - the IPFS Hash that links to the PDF certificate
      */
+    async createPrivateShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the country of the logged user
+            const Mspid = gateway.getClient().getMspid();
+            let country;
+            let contractName = 'privateData';
+            if (Mspid === 'DmaMSP') {
+                country = 'Denmark';
+                contractName += "Dma";
+            } else if (Mspid === 'VtaMSP') {
+                country = 'Estonia';
+                contractName += "Vta";
+            }
+
+            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
+            const contract = network.getContract(contractName);
+
+            // private data
+            const transientData = {
+                certName: Buffer.from(certName),
+                certNum: Buffer.from(certNum),
+                imo: Buffer.from(imo),
+                issueDate: Buffer.from(issueDate),
+                expiryDate: Buffer.from(expiryDate),
+                certHash: Buffer.from(certHash)
+            };
+
+            console.log(country);
+            console.log(imo);
+
+            // Create Transaction and submit
+            const transactionName = 'createPrivateShipCertificate';
+            const result = await contract.createTransaction(transactionName)
+                .setTransient(transientData)
+                .submit(country, imo);
+
+            console.log('Transaction has been submitted');
+            await gateway.disconnect();
+        } catch (error) {
+            console.error(`Failed to submit transaction: ${error}`);
+            return Promise.reject(`Failed to submit transaction: ${error}`);
 
     async createShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
+    },
         try {
             const userExists = await wallet.exists(username);
             if (!userExists) {

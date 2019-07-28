@@ -154,6 +154,7 @@ let Chaincode = class {
   
           // === Retrieve Transient Data ===
           console.log('Getting Transient Data');
+          let transientData = stub.getTransient();
   
           // === convert into string ===
           console.log('===================================================')
