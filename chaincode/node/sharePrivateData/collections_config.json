@@ -1,6 +1,6 @@
 [
   {
-    "name": "collectionDenmarkAndEstoniaShipCertificates",
+    "name": "SharedDenmarkAndEstoniaShipCertificates",
     "policy": "OR('DmaMSP.member', 'VtaMSP.member')",
     "requiredPeerCount": 0,
     "maxPeerCount": 3,
