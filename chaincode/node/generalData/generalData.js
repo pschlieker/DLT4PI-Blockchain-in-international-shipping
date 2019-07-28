@@ -1,34 +1,9 @@
+import MaritimeAuthority from '../common/class-module';
+import Ship from '../common/class-module';
 const shim = require('fabric-shim');
-// const util = require('util');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
 const request = require('request');
-
-class MaritimeAuthority {
-    constructor(objType, name, country, domain, borders) {
-        // this.objType = objType; // "MA" - used to distinguish  various types of objects in state database
-        this.name = name;
-        this.country = country; // country is the key
-        // this.domain = domain;
-        this.borders = borders;
-        this.shipList = [];
-    }
-    addShips(shipList) {
-        return Array.prototype.push.apply(this.shipList, shipList);
-    }
-}
-class Ship {
-    constructor(objType, imo, name, shipType, flag, homePort, tonnage, owner) {
-        // this.objType = objType; // "ship" - used to distinguish  various types of objects in state database
-        this.imo = imo; // imo is the key
-        this.name = name;
-        // this.shipType = shipType;
-        this.flag = flag;
-        // this.homePort = homePort;
-        // this.tonnage = tonnage;
-        // this.owner = owner;
-    }
-}
 
 let Chaincode = class {
 

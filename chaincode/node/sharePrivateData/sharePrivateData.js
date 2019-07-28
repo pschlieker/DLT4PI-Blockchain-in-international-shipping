@@ -1,66 +1,11 @@
+import MaritimeAuthority from '../common/class-module';
+import Ship from '../common/class-module';
+import PrivateShipCertificate from '../common/class-module';
 const shim = require('fabric-shim');
 // const util = require('util');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
 const request = require('request');
-
-class MaritimeAuthority {
-    constructor(objType, name, country, domain, borders) {
-        // this.objType = objType; // "MA" - used to distinguish  various types of objects in state database
-        this.name = name;
-        this.country = country; // country is the key
-        // this.domain = domain;
-        this.borders = borders;
-        this.shipList = [];
-    }
-    addShips(shipList) {
-        return Array.prototype.push.apply(this.shipList, shipList);
-    }
-}
-class Ship {
-    constructor(objType, imo, name, shipType, flag, homePort, tonnage, owner) {
-        // this.objType = objType; // "ship" - used to distinguish  various types of objects in state database
-        this.imo = imo; // imo is the key
-        this.name = name;
-        // this.shipType = shipType;
-        this.flag = flag;
-        // this.homePort = homePort;
-        // this.tonnage = tonnage;
-        // this.owner = owner;
-    }
-}
-
-// === All peers will have this private data in a side database ===
-// In Fabric 1.4, it is not possible to define private data collection at run-time
-// (i.e. could not grant access to another organization at runtime)
-// Private Data Collections must be be defined statically
-// Reference: https://medium.com/@spsingh559/deep-dive-into-private-data-in-hyperledger-fabric-cf23931e8f96
-
-// In this apporach, each Maritime Authority will have its own PrivateShipCertificates PDC
-// At first, they could only be accessed by themselves (defined in the "collections_config.json")
-// If location consensus is reached, the chaincode function will trigger a chaincode upgrade
-// to update the endorsement policy of the corresponding PrivateShipCertificates PDC
-class PrivateShipCertificate {
-    constructor(objType, certName, certNum, imo, issueDate, expiryDate, certHash) {
-        // this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
-        this.certName = certName;
-        this.certNum = certNum;
-        this.imo = imo; // imo is the key
-        this.issueDate = issueDate;
-        this.expiryDate = expiryDate;
-        this.certHash = certHash;
-    }
-    getCertHash() {
-        if (this.certHash || this.certHash.length <= 0) {
-            return this.certHash;
-        } else {
-            throw new Error('certHash is empty');
-        }
-    }
-    setCertHash(certHash) {
-        this.certHash = certHash;
-    }
-}
 
 let Chaincode = class {
 

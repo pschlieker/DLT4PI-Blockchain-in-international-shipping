@@ -1,3 +1,4 @@
+import PrivateShipCertificate from '../common/class-module';
 const shim = require('fabric-shim');
 
 // === All peers will have this private data in a side database ===
@@ -11,17 +12,6 @@ const shim = require('fabric-shim');
 // When another MA requests certificates for a ship, they can first verify the location of the ship using
 // the location oracle and then create a copy of the requested certificates in another PDC shared by the
 // two MAs.
-class PrivateShipCertificate {
-    constructor(objType, certName, certNum, imo, issueDate, expiryDate, certHash) {
-        // this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
-        this.certName = certName;
-        this.certNum = certNum;
-        this.imo = imo; // imo is the key
-        this.issueDate = issueDate;
-        this.expiryDate = expiryDate;
-        this.certHash = certHash;
-    }
-}
 
 let Chaincode = class {
 

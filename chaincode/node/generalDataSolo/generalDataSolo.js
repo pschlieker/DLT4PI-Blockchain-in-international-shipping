@@ -1,17 +1,5 @@
+import Ship from '../common/class-module';
 const shim = require('fabric-shim');
-
-class Ship {
-    constructor(objType, imo, name, shipType, flag, homePort, tonnage, owner) {
-        // this.objType = objType; // "ship" - used to distinguish  various types of objects in state database
-        this.imo = imo; // imo is the key
-        this.name = name;
-        // this.shipType = shipType;
-        this.flag = flag;
-        // this.homePort = homePort;
-        // this.tonnage = tonnage;
-        // this.owner = owner;
-    }
-}
 
 let Chaincode = class {
 
