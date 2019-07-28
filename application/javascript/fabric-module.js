@@ -1,6 +1,5 @@
 const { FileSystemWallet, Gateway } = require('fabric-network');
 const path = require('path');
-const ipfs = require('../../ipfs/ipfs-module');
 const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
@@ -92,6 +91,44 @@ module.exports = {
             const transactionName = 'queryAllShipsByCountry';
             country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
             const result = await contract.evaluateTransaction(transactionName, country);
+            console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
+            return result;
+
+        } catch (error) {
+            console.error(`Failed to evaluate transaction: ${error}`);
+        }
+    },
+
+    /**
+     * Execute queryAllShips chaincode
+     * @param {string} ccpPath - path to connection profile
+     * @param {string} username - username of the peer
+     * @param {string} channelName
+     */
+    async queryAllShips(ccpPath, username, channelName) {
+        try {
+            const userExists = await wallet.exists(username);
+            if (!userExists) {
+                console.log(`An identity for the user ${username} does not exist in the wallet`);
+                console.log('Run the registerUser before retrying');
+                return;
+            }
+
+            // Create a new gateway for connecting to our peer node.
+            const gateway = new Gateway();
+            await gateway.connect(ccpPath, { wallet, identity: username, discovery: { enabled: true, asLocalhost: true } });
+
+            // Get the network (channel) our contract is deployed to.
+            const network = await gateway.getNetwork(channelName);
+
+            // Get the contract from the network.
+            const contractName = 'mycc';
+            const contract = network.getContract(contractName);
+
+            // Evaluate the specified transaction.
+            // queryAllShipsByCountry - requires 1 argument, e.g. ("queryAllShipsByCountry", "Denmark")
+            const transactionName = 'queryAllShips';
+            const result = await contract.evaluateTransaction(transactionName);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
             return result;
 
@@ -217,13 +254,11 @@ module.exports = {
             // Get the country of the logged user
             const Mspid = gateway.getClient().getMspid();
             let country;
-            console.log(Mspid);
             if (Mspid === 'DmaMSP') {
                 country = 'Denmark';
             } else if (Mspid === 'VtaMSP') {
                 country = 'Estonia';
             }
-            console.log(country);
 
             // Evaluate the specified transaction.
             // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
@@ -280,6 +315,7 @@ module.exports = {
 
         } catch (error) {
             console.error(`Failed to submit transaction: ${error}`);
+            return Promise.reject(`Failed to submit transaction: ${error}`);
         }
     },
 
@@ -327,7 +363,6 @@ module.exports = {
                 certHash: Buffer.from(certHash)
             };
 
-
             // Create Transaction and submit
             const transactionName = 'createPrivateShipCertificateTransient';
             const result = await contract.createTransaction(transactionName)
@@ -357,6 +392,7 @@ module.exports = {
 
         } catch (error) {
             console.error(`Failed to submit transaction: ${error}`);
+            return Promise.reject(`Failed to submit transaction: ${error}`);
         }
     },
 

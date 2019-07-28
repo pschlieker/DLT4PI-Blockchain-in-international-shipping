@@ -411,6 +411,40 @@ let Chaincode = class {
         return maAsBytes;
     }
 
+    // ==========================================================================
+    // queryAllShips - returns all ships registered in the system
+    // ==========================================================================
+    async queryAllShips(stub, args) {
+        // e.g. '{"Args":["queryAllShips"]}'
+        console.info('============= START : Query All Ships ===========');
+        if (args.length !== 0) {
+            throw new Error('Incorrect number of arguments. Expecting 0 arguments');
+        }
+
+        const startKey = 'A';
+        const endKey = 'Z';
+
+        const iterator = await stub.getStateByRange(startKey, endKey);
+
+        const allResults = [];
+        while (true) {
+            const res = await iterator.next();
+
+            if (res.value && res.value.value.toString()) {
+                let shipList = JSON.parse(res.value.value.toString('utf8')).shipList;
+                shipList.forEach(function(ship){
+                    allResults.push(ship);
+                })
+            }
+            if (res.done) {
+                await iterator.close();
+                console.info(allResults);
+                console.info('============= END : Query All Ships ===========');
+                return Buffer.from(JSON.stringify(allResults));
+            }
+        }
+    }
+
 
     // ==========================================================================
     // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
