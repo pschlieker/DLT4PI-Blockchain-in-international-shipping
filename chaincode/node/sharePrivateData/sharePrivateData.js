@@ -62,8 +62,11 @@ let Chaincode = class {
         console.info('============= START : Initialize Dma Vta Shared Private Data ===========');
         // === Create PrivateShipCertificates private data collections, save to state ===
         let SharedDenmarkAndEstoniaShipCertificates = [
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
+            new PrivateShipCertificate('privShipCert', 'Great Dangerous Cargo Carrying Certificate', '127666', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '223456', '9166778', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
+            new PrivateShipCertificate('privShipCert', 'Very Dangerous Cargo Carrying Certificate', '323456', '9148843', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '423456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
+
         ];
 
         // === Save SharedDenmarkAndEstoniaShipCertificates to state ===
