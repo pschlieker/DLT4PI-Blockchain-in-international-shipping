@@ -43,7 +43,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
-            const contract = network.getContract('generalDataSolo');
+            const contract = network.getContract('generalData');
 
             // Evaluate the specified transaction.
             // queryShip - requires 2 argument, e.g. ("queryShip", "Denmark", "9166778")
@@ -82,7 +82,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
-            const contract = network.getContract('generalDataSolo');
+            const contract = network.getContract('generalData');
 
             // Evaluate the specified transaction.
             // queryAllShipsByCountry - requires 1 argument, e.g. ("queryAllShipsByCountry", "Denmark")
@@ -264,7 +264,7 @@ module.exports = {
             const network = await gateway.getNetwork(channelName);
 
             // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
-            const contract = network.getContract('generalDataSolo');
+            const contract = network.getContract('generalData');
 
             // Submit the specified transaction.
             // createShip - requires 7 argument, e.g. ('createShip', '5671234', 'APPLE', 'Container Ship', 'Denmark', 'Port of Copenhagen', '1234', 'Alice')
@@ -366,7 +366,7 @@ module.exports = {
             let contract;
 
             // Get the country of the queried ship
-            contract = network.getContract('generalDataSolo');
+            contract = network.getContract('generalData');
             const ship = await contract.evaluateTransaction('queryShip', country, imo);
             console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
             const targetCountry = JSON.parse(ship.toString()).flag;

@@ -1,9 +1,33 @@
-import MaritimeAuthority from '../common/class-module';
-import Ship from '../common/class-module';
 const shim = require('fabric-shim');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
 const request = require('request');
+
+class MaritimeAuthority {
+    constructor(objType, name, country, domain, borders) {
+        this.objType = objType; // "MA" - used to distinguish  various types of objects in state database
+        this.name = name;
+        this.country = country; // country is the key
+        this.domain = domain;
+        this.borders = borders;
+        this.shipList = [];
+    }
+    addShips(shipList) {
+        return Array.prototype.push.apply(this.shipList, shipList);
+    }
+}
+class Ship {
+    constructor(objType, imo, name, shipType, flag, homePort, tonnage, owner) {
+        this.objType = objType; // "ship" - used to distinguish  various types of objects in state database
+        this.imo = imo; // imo is the key
+        this.name = name;
+        this.shipType = shipType;
+        this.flag = flag;
+        this.homePort = homePort;
+        this.tonnage = tonnage;
+        this.owner = owner;
+    }
+}
 
 let Chaincode = class {
 
@@ -11,7 +35,7 @@ let Chaincode = class {
     // Init initializes chaincode
     // Init method is called when chaincode "shipping" is instantiated
     // ===========================
-    async Init() {
+    async Init(stub) {
         console.info('=========== Instantiated shipping chaincode ===========');
         return shim.success();
     }
@@ -43,11 +67,11 @@ let Chaincode = class {
     // Endorsement Policy: AND('Org1.member', ... 'OrgN.member')
     // ===========================================================================
     async initLedger(stub, args) {
-        console.info('============= START : Initialize Ledger ===========');
+        console.info('============= START : Initialize Ledger General ===========');
 
         // === Create MaritimeAuthorities objects ===
         let denmarkBorders = JSON.parse(fs.readFileSync('./denmark-eez-outerbounds.json')).geometry.coordinates;
-        let estoniaBorders = JSON.parse(fs.readFileSync('./denmark-eez-outerbounds.json')).geometry.coordinates;
+        let estoniaBorders = JSON.parse(fs.readFileSync('./estonia-eez-outerbounds.json')).geometry.coordinates;
         let maritimeAuthorities = [
             new MaritimeAuthority('MA', 'Danish Maritime Authority', 'Denmark', 'dma.dk', denmarkBorders),
             new MaritimeAuthority('MA', 'Estonian Maritime Administration', 'Estonia', 'veeteedeeamet.ee', estoniaBorders)
@@ -73,7 +97,7 @@ let Chaincode = class {
             throw new Error('Cannot initialize MaritimeAuthority: ' + err)
         }
 
-        console.info('============= END : Initialize Ledger ===========');
+        console.info('============= END : Initialize Ledger General ===========');
     }
 
     // ==========================================================================

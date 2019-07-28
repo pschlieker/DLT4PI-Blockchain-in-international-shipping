@@ -1,11 +1,26 @@
-import MaritimeAuthority from '../common/class-module';
-import Ship from '../common/class-module';
-import PrivateShipCertificate from '../common/class-module';
 const shim = require('fabric-shim');
-// const util = require('util');
-const geolocation = require('geolocation-utils');
-const fs = require('fs');
-const request = require('request');
+
+class PrivateShipCertificate {
+    constructor(objType, certName, certNum, imo, issueDate, expiryDate, certHash) {
+        this.objType = objType; // "privShipCert" - used to distinguish  various types of objects in state database
+        this.certName = certName;
+        this.certNum = certNum;
+        this.imo = imo; // imo is the key
+        this.issueDate = issueDate;
+        this.expiryDate = expiryDate;
+        this.certHash = certHash;
+    }
+    getCertHash() {
+        if (this.certHash || this.certHash.length <= 0) {
+            return this.certHash;
+        } else {
+            throw new Error('certHash is empty');
+        }
+    }
+    setCertHash(certHash) {
+        this.certHash = certHash;
+    }
+}
 
 let Chaincode = class {
 
