@@ -76,7 +76,6 @@ let Chaincode = class {
         console.info('============= END : Initialize Ledger ===========');
     }
 
-
     // ==========================================================================
     // verifyLocation - check whether the ship is within country's border by calling external api (oracle)
     // Endorsement Policy: AND('Org1.member', ..., 'OrgN.member')
@@ -113,6 +112,114 @@ let Chaincode = class {
                 return shim.success(Buffer.from('false'));
             }
         });
+    }
+
+    // ==========================================================================
+    // createShip - create a ship to the state
+    // Endorsement Policy: OR('Org1.member', ..., 'OrgN.member')
+    // ==========================================================================
+    async createShip(stub, args) {
+        // e.g. '{"Args":["createShip", "5671234", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}'
+        console.info('============= START : Create Ship ===========');
+        if (args.length !== 7) {
+            throw new Error('Incorrect number of arguments. Expecting 7');
+        }
+
+        // === Create ship object, get MA from the flag, add the newly created ship to shipList, save to state ===
+        let ship = new Ship('ship', args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+        try {
+            let cid = new ClientIdentity(stub);
+            let invokingMSP = cid.getMSPID();   // "DmaMSP" or "VtaMSP"
+            // === Ensure an organization can't create ships for other orgs ===
+            if ((invokingMSP === 'DmaMSP' && args[3] === 'Denmark') || (invokingMSP === 'VtaMSP' && args[3] === 'Estonia')) {
+                let maAsBytes = await stub.getState(ship.flag);
+                let ma = JSON.parse(maAsBytes);
+                console.log(ma.shipList);
+                ma.shipList.push(ship);
+
+                await stub.putState(ma.country, Buffer.from(JSON.stringify(ma)));
+                console.log(`Ship ${args[1]} created with ${ma.country}`);
+            }
+        } catch (err) {
+            throw new Error(err)
+        }
+        console.info('============= END : Create Ship ===========');
+    }
+
+    // ==========================================================================
+    // queryShip - return the queried ship by imo from the state
+    // Endorsement Policy: OR('Org1.member', ..., 'OrgN.member')
+    // ==========================================================================
+    async queryShip(stub, args) {
+        // e.g. '{"Args":["queryShip", "Denmark", "9166778"]}'
+        console.info('============= START : Query Ship ===========');
+        if (args.length !== 2) {
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo number) eg: Denmark, 9166778');
+        }
+
+        // === Get MA from the state ===
+        let country = args[0];
+        let imo = args[1];
+
+        let maAsBytes = await stub.getState(country);
+        console.log(maAsBytes.toString());
+        let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
+        }
+        console.log(ship.toString());
+        let shipAsBytes = Buffer.from(JSON.stringify(ship));
+        console.info('============= END : Query Ship ===========');
+        return shipAsBytes;
+    }
+
+    // ==========================================================================
+    // queryAllShipsByCountry - return an array of ships on the blockchain
+    // Endorsement Policy: OR('Org1.member', ..., 'OrgN.member')
+    // ==========================================================================
+    async queryAllShipsByCountry(stub, args) {
+        // e.g. '{"Args":["queryAllShipsByCountry", "Denmark"]}'
+        console.info('============= START : Query All Ships by Country ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (country) eg: Denmark');
+        }
+        let country = args[0].charAt(0).toUpperCase() + args[0].slice(1);
+        let maAsBytes = await stub.getState(country);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist.');
+        }
+        console.log('Successful getting maAsBytes');
+        let result = JSON.parse(maAsBytes).shipList;
+        console.log('shiplist: ' + result);
+        if (!result || result.toString().length <= 0) {
+            throw new Error(`ShipList of ${country} does not exist.`);
+        }
+        let resultAsBytes = Buffer.from(JSON.stringify(result));
+        console.info('============= END : Query All Ships by Country ===========');
+        return resultAsBytes;
+    }
+
+    // ==========================================================================
+    // queryMaritimeAuthority - return the queried Maritime Authority from the state
+    // Endorsement Policy: OR('Org1.member', ..., 'OrgN.member')
+    // ==========================================================================
+    async queryMaritimeAuthority(stub, args) {
+        // e.g. '{"Args":["queryMaritimeAuthority", "Denmark"]}'
+        console.info('============= START : Query Maritime Authority ===========');
+        if (args.length !== 1) {
+            throw new Error('Incorrect number of arguments. Expecting 1 argument (country) eg: Denmark');
+        }
+
+        // === Query MaritimeAuthority object ===
+        let country = args[0];
+
+        let maAsBytes = await stub.getState(country);
+        if (!maAsBytes || maAsBytes.toString().length <= 0) {
+            throw new Error(country + ' does not exist: ');
+        }
+        console.log(maAsBytes.toString());
+        console.info('============= END : Query Maritime Authority ===========');
+        return maAsBytes;
     }
 };
 

@@ -36,6 +36,8 @@ setGlobals() {
     CORE_PEER_LOCALMSPID="DmaMSP"
     CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
     CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/users/Admin@dma.dk/msp
+    CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.crt
+    CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/dma.dk/peers/peer0.dma.dk/tls/server.key
     if [ $PEER -eq 0 ]; then
       CORE_PEER_ADDRESS=peer0.dma.dk:7051
     else
@@ -45,6 +47,8 @@ setGlobals() {
     CORE_PEER_LOCALMSPID="VtaMSP"
     CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG2_CA
     CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/veeteedeamet.ee/users/Admin@veeteedeamet.ee/msp
+    CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/veeteedeamet.ee/peers/peer0.veeteedeamet.ee/tls/server.crt
+    CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/veeteedeamet.ee/peers/peer0.veeteedeamet.ee/tls/server.key
     if [ $PEER -eq 0 ]; then
       CORE_PEER_ADDRESS=peer0.veeteedeamet.ee:9051
     else
@@ -55,12 +59,14 @@ setGlobals() {
     CORE_PEER_LOCALMSPID="Org3MSP"
     CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG3_CA
     CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/sjofartsverket.se/users/Admin@sjofartsverket.se/msp
+    # TODO check if other globals are needed (see above)
     if [ $PEER -eq 0 ]; then
       CORE_PEER_ADDRESS=peer0.sjofartsverket.se:11051
     else
       CORE_PEER_ADDRESS=peer1.sjofartsverket.se:12051
     fi
   else
+
     echo "================== ERROR !!! ORG Unknown =================="
   fi
 
@@ -121,7 +127,6 @@ installChaincode() {
   VERSION=${3:-1.0}
   set -x
   peer chaincode install -n generalData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalData/ >&log.txt
-  peer chaincode install -n generalDataSolo -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}generalDataSolo/ >&log.txt
   peer chaincode install -n sharePrivateData -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}sharePrivateData/ >&log.txt
 
   #Only install the chaincode on the peers running it
@@ -152,35 +157,29 @@ instantiateChaincode() {
   # the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                                   >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')"  --collections-config ${COLLECTIONS_PATH_SHARED}   >&log.txt
     
-    #Only instatiate the chaincode on the peers running it
-    if [ $ORG == "1" ]; then
-      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    fi
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-vta.json >&log.txt
 
-    if [ $ORG == "2" ]; then
-      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    fi
-    
+    # instantiate vta-only code
+    ORG=1
+    setGlobals $PEER $ORG
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v ${VERSION} -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-dma.json >&log.txt
+
     res=$?
     set +x
   else
     set -x
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalDataSolo  -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')"                                          >&log.txt
-    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P " OR ('DmaMSP.peer','VtaMSP.peer')" --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
-    
-    #Only instatiate the chaincode on the peers running it
-    if [ $ORG == "1" ]; then
-      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    fi
-    
-    if [ $ORG == "2" ]; then
-      peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${COLLECTIONS_PATH_PRIVATE} >&log.txt
-    fi
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData      -l ${LANGUAGE} -v 1.0 -c '{"Args":["initLedger"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"                                                 >&log.txt
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "OR ('DmaMSP.peer','VtaMSP.peer')"  --collections-config ${COLLECTIONS_PATH_SHARED} >&log.txt
+
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataVta   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('VtaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-vta.json >&log.txt
+
+    # instantiate vta-only code
+    ORG=1
+    setGlobals $PEER $ORG
+    peer chaincode instantiate -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n privateDataDma   -l ${LANGUAGE} -v 1.0 -c '{"Args":[]}'             -P "AND ('DmaMSP.peer')"               --collections-config ${PRIVATE_COLLECTIONS_DIR}collections_config-dma.json >&log.txt
 
     res=$?
     set +x
@@ -198,7 +197,7 @@ upgradeChaincode() {
   setGlobals $PEER $ORG
 
   set -x
-  peer chaincode upgrade -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 2.0 -c '{"Args":["init","a","90","b","210"]}' -P "AND ('DmaMSP.peer','VtaMSP.peer','Org3MSP.peer')"
+  peer chaincode upgrade -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData -v 2.0 -c '{"Args":[]}' -P "AND ('DmaMSP.peer','VtaMSP.peer')"
   res=$?
   set +x
   cat log.txt
@@ -308,7 +307,7 @@ chaincodeQueryDenmarkShipCert() {
     sleep $DELAY
     echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n privateDataDma -c '{"Args":["readPrivateShipCertificate", "Denmark", "9274848"]}' >&log.txt
     res=$?
     set +x
   done
@@ -334,7 +333,7 @@ chaincodeQueryEstoniaShipCert() {
     sleep $DELAY
     echo "Attempting to readPrivateShipCertificate peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n privateDataVta -c '{"Args":["readPrivateShipCertificate", "Estonia", "9148843"]}' >&log.txt
     res=$?
     set +x
   done
@@ -360,7 +359,7 @@ chaincodeQueryDenmarkShip() {
     sleep $DELAY
     echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryShip", "Denmark", "9166778"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n generalData -c '{"Args":["queryShip", "Denmark", "9166778"]}' >&log.txt
     res=$?
     set +x
   done
@@ -386,7 +385,7 @@ chaincodeQueryEstoniaShip() {
     sleep $DELAY
     echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryShip", "Estonia", "9762687"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n generalData -c '{"Args":["queryShip", "Estonia", "9762687"]}' >&log.txt
     res=$?
     set +x
   done
@@ -412,7 +411,7 @@ chaincodeQueryAllDenmarkShip() {
     sleep $DELAY
     echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryAllShipsByCountry", "Denmark"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n generalData -c '{"Args":["queryAllShipsByCountry", "Denmark"]}' >&log.txt
     res=$?
     set +x
   done
@@ -438,7 +437,7 @@ chaincodeQueryAllEstoniaShip() {
     sleep $DELAY
     echo "Attempting to queryShip peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["queryAllShipsByCountry", "Estonia"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n generalData -c '{"Args":["queryAllShipsByCountry", "Estonia"]}' >&log.txt
     res=$?
     set +x
   done
@@ -486,12 +485,12 @@ chaincodeInvokeCreateDenmarkCert() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Denmark", "International Oil Prevention certificate", "901234", "9166778", "2030-01-01", "2031-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
     res=$?
     set +x
   fi
@@ -513,12 +512,12 @@ chaincodeInvokeCreateEstoniaCert() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n sharePrivateData $PEER_CONN_PARMS -c '{"Args":["createPrivateShipCertificate", "Estonia", "International Oil Prevention certificate", "901234", "9762687", "2040-01-01", "2041-12-31", "IPFS_Hash_to_Cert"]}' >&log.txt
     res=$?
     set +x
   fi
@@ -540,12 +539,12 @@ chaincodeInvokeCreateShip() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createShip", "001122", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["createShip", "001122", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["createShip", "001122", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["createShip", "001122", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}' >&log.txt
     res=$?
     set +x
   fi
@@ -567,12 +566,12 @@ chaincodeInvokeVerifyLocation() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
+    peer chaincode invoke -o orderer.emsa.europa.eu:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n generalData $PEER_CONN_PARMS -c '{"Args":["verifyLocation", "9166778", "Denmark"]}' >&log.txt
     res=$?
     set +x
   fi

@@ -122,7 +122,8 @@ module.exports = {
             } else if (targetName === 'Estonia') {
                 targetName = 'Vta';
             }
-            let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config.json');
+            // TODO check this path
+            let collectionConfigPath = path.resolve('..', '..', 'chaincode', 'collections_config-vta.json');
             // read the original endorsement policy
             let config = JSON.parse(await fs.readFileSync(collectionConfigPath));
             config.forEach((collection) => {
