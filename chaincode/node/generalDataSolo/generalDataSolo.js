@@ -1,5 +1,6 @@
 import Ship from '../common/class-module';
 const shim = require('fabric-shim');
+const ClientIdentity = require('fabric-shim').ClientIdentity;
 
 let Chaincode = class {
 
@@ -36,7 +37,6 @@ let Chaincode = class {
     // ==========================================================================
     // createShip - create a ship to the state
     // Endorsement Policy: OR('Org1.member', ..., 'OrgN.member')
-    // TODO how to ensure an organization can't create ships for other orgs?
     // ==========================================================================
     async createShip(stub, args) {
         // e.g. '{"Args":["createShip", "5671234", "APPLE", "Container Ship", "Denmark", "Port of Copenhagen", "1234", "Alice"]}'
@@ -47,15 +47,22 @@ let Chaincode = class {
 
         // === Create ship object, get MA from the flag, add the newly created ship to shipList, save to state ===
         let ship = new Ship('ship', args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
-        // TODO: check if the ship is created with the correct country (only "Denmark", "Estonia", "Germany")
-        let maAsBytes = await stub.getState(ship.flag);
-        let ma = JSON.parse(maAsBytes);
-        console.log(ma.shipList);
-        ma.shipList.push(ship);
-
-        await stub.putState(ma.country, Buffer.from(JSON.stringify(ma)));
-        console.log(`Ship ${args[1]} created with ${ma.country}`);
-
+        try {
+            let cid = new ClientIdentity(stub);
+            let invokingMSP = cid.getMSPID();   // "DmaMSP" or "VtaMSP"
+            // === Ensure an organization can't create ships for other orgs ===
+            if ((invokingMSP === 'DmaMSP' && args[3] === 'Denmark') || (invokingMSP === 'VtaMSP' && args[3] === 'Estonia')) {
+                let maAsBytes = await stub.getState(ship.flag);
+                let ma = JSON.parse(maAsBytes);
+                console.log(ma.shipList);
+                ma.shipList.push(ship);
+        
+                await stub.putState(ma.country, Buffer.from(JSON.stringify(ma)));
+                console.log(`Ship ${args[1]} created with ${ma.country}`);
+            } 
+        } catch (err) {
+            throw new Error(err)
+        }
         console.info('============= END : Create Ship ===========');
     }
 
