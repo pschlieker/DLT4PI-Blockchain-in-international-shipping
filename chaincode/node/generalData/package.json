@@ -1,6 +1,6 @@
 {
 	"name": "generalData",
-	"version": "1.0",
+	"version": "0.0.1",
 	"description": "shipping chaincode for general data implemented in node.js",
 	"engines": {
 		"node": ">=8.4.0",
