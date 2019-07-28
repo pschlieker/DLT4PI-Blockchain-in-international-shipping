@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
-import * as axios from 'axios';
+const axios = require('axios');
+
 // import {ShipService} from "./ship.service";
 
 @Component({
@@ -13,18 +14,21 @@ export class ShipsComponent implements OnInit {
   public selectedCountry = '';
   public testObj: any = {};
   public newShip: any = {shipId: '', shipName: '', shipCountry: ''};
-  public shipList: any = [
-    {shipId: '1', shipName: 'Ship1', shipCountry: 'Denmark'},
-    {shipId: '2', shipName: 'Ship2', shipCountry: 'Germany'},
-    {shipId: '3', shipName: 'Ship3', shipCountry: 'Italy'},
-    {shipId: '4', shipName: 'Ship1', shipCountry: 'Estonia'},
-  ];
+  // public shipList: any = [
+  //   {shipId: '1', shipName: 'Ship1', shipCountry: 'Denmark'},
+  //   {shipId: '2', shipName: 'Ship2', shipCountry: 'Germany'},
+  //   {shipId: '3', shipName: 'Ship3', shipCountry: 'Italy'},
+  //   {shipId: '4', shipName: 'Ship1', shipCountry: 'Estonia'},
+  // ];
+  public shipList: any = [];
 
   constructor(private route: ActivatedRoute, private router: Router, private toastr: ToastrService) {
     this.route.params.subscribe(params => {
       if (params.country && params.country !== 'undefined') {
         this.selectedCountry = params.country;
         this.newShip.shipCountry = this.selectedCountry;
+        // this.shipList = this.getShips();
+        this.getShips();
       } else {
         this.selectedCountry = undefined;
       }
@@ -35,10 +39,15 @@ export class ShipsComponent implements OnInit {
   }
 
   getShips() {
-    axios.default.get('https://localhost:3000/queryShips/')
+    // let header = {
+    //   'Access-Control-Allow-Origin': '*',
+    //   'content-type': 'application/json'
+    // };
+    axios.get('http://localhost:3000/queryShips/' + this.selectedCountry)
       .then((response) => {
         // handle success
-        this.shipList = response.data;
+        this.shipList = response.data.data;
+        // return response.data;
       })
       .catch((error) => {
         // handle error

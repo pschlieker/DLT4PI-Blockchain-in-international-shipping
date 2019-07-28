@@ -25,9 +25,9 @@
     </thead>
     <tbody>
       <tr *ngFor="let ship of shipList">
-        <td scope="col">{{ship.shipId}}</td>
-        <td scope="col">{{ship.shipName}}</td>
-        <td scope="col">{{ship.shipCountry}}</td>
+        <td scope="col">{{ship.imo}}</td>
+        <td scope="col">{{ship.name}}</td>
+        <td scope="col">{{ship.flag}}</td>
         <td scope="col"><button type="button" class="btn-sm btn-primary" (click)="viewShipDetails(ship)">
           View Certificates</button></td>
       </tr>
