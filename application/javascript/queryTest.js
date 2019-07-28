@@ -1,4 +1,3 @@
-'use strict'
 
 const shippingClient = require('./fabric-module');
 const path = require('path');

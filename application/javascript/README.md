@@ -1,9 +1,12 @@
 # Usage
 
 First run the enroll admin and register user scripts to interact with the fabric network:
-`node enrollAndRegister.js`
+```bash
+node enrollAndRegisterDma.js
+node enrollAndRegisterVta.js
+```
 
-To reset the enrollment, run this:
+To reset the enrollment (after a previous build of the network), run:
 `./resetEnrollement.sh`
 
 To interact with the fabric network in your application, import the fabric module as follow:
