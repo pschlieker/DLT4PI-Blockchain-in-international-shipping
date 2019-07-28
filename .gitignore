@@ -55,3 +55,6 @@ Thumbs.db
 
 # Platform Dependend Binaries
 bin
+fabric-network/scripts/updateChaincode\.sh
+
+fabric-network/lastversion
