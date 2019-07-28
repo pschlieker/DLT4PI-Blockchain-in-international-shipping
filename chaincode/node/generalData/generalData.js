@@ -2,6 +2,7 @@ const shim = require('fabric-shim');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
 const request = require('request');
+const ClientIdentity = shim.ClientIdentity;
 
 class MaritimeAuthority {
     constructor(objType, name, country, domain, borders) {
@@ -126,8 +127,8 @@ let Chaincode = class {
         let api = `http://oracle/${imo}`;
         request(api, { json: true }, (err, res, body) => {
             if (err || res.statusCode !== 200) { throw new Error(err); }
-            let shipLat = body.entries[0].lat;
-            let shipLng = body.entries[0].lng;
+            let shipLat = Number(body.entries[0].lat);
+            let shipLng = Number(body.entries[0].lng);
             // check if the location is within the country's maritime borders
             if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
                 console.info('============= END : Verify Location ===========');
