@@ -1,7 +1,6 @@
 const shim = require('fabric-shim');
 const geolocation = require('geolocation-utils');
 const fs = require('fs');
-const request = require('request');
 const rp = require('request-promise');
 const ClientIdentity = shim.ClientIdentity;
 
@@ -109,7 +108,7 @@ let Chaincode = class {
     // ==========================================================================
     async verifyLocation(stub, args) {
         // Estonia ship going to Denmark
-        // e.g. '{"Args":["verifyLocation", "9148843", "Denmark"]}'
+        // e.g. '{"Args":["verifyLocation", "9762687", "Denmark"]}'
         console.info('============= START : Verify Location ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (imo, country)');
@@ -119,9 +118,6 @@ let Chaincode = class {
 
         // Get the country's borders
         let maAsBytes = await stub.getState(country);
-        // let maForLog = JSON.parse(maAsBytes);
-        // maForLog.borders = [];
-        // console.log(maForLog.toString());
         let borders = JSON.parse(maAsBytes).borders;
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -189,9 +185,6 @@ let Chaincode = class {
         let imo = args[1];
 
         let maAsBytes = await stub.getState(country);
-        // let maForLog = JSON.parse(maAsBytes);
-        // maForLog.borders = maForLog.borders.splice(3, borders.length-4);
-        // console.log(maForLog.toString());
         let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');

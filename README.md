@@ -40,6 +40,8 @@ The oracle in the prototype is mocked, in order to easily demonstrate what happe
 Clone the repo
 ```
 git clone https://bitbucket.org/fogshot/blockchain-shipping.git
+cd blockchain-shipping
+chmod 777 ./startItAll.sh && ./startItAll.sh
 ```
 
 Navigate to the git repo and install Hyperledger Fabric binaries (platform dependent)

@@ -117,57 +117,7 @@ chaincodeInvokeInitLedgerShared 0 1 0 2
 
 if [ "$SKIP_QUERIES" != "true" ]; then
 
-  echo '==================START: Query transactions Private Certificates=================='
-
-  # ==================Query Ship Certificates Private Part==================
-
-  # Query Denmark ship certificate on peer0.dma.dk
-  # Expected: Denmark MA could access Denmark ship certificates
-  echo "Querying Denmark certificates on peer0.dma.dk ..."
-  chaincodeQueryDenmarkShipCertPrivate 0 1
-
-  # Query Estonia ship certificate on peer1.veeteedeamet.ee
-  # Expected: Estonia MA could access Estonia ship certificates
-  echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
-  chaincodeQueryEstoniaShipCertPrivate 1 2
-
-  # Query Denmark ship certificate on peer1.veeteedeamet.ee
-  # Expected: Estonia MA could NOT access Denmark ship certificates
-   echo "Querying Denmark certificates on peer1.veeteedeamet.ee ..."
-   chaincodeQueryDenmarkShipCertPrivate 1 2
-
-  # Query Estonia ship certificate on peer0.dma.dk
-  # Expected: Denmark MA could NOT access Estonia ship certificates
-   echo "Querying Denmark certificates on peer0.dma.dk ..."
-   chaincodeQueryEstoniaShipCertPrivate 0 1
-
-  echo '==================END: Query transactions Private Certificates=================='
-  
-  
-  echo '==================START: Create Private Certificates=================='
-  # Create Denmark ship certificate on peer0.dma.dk
-  # Expected: Denmark MA can create Denmark ship certificates
-  echo "Creating Denmark certificates on peer0.dma.dk ..."
-  chaincodeCreateDenmarkShipCertPrivate 0 1
-
-  echo "Query Denmark certificates on peer0.dma.dk for verification ..."
-  chaincodeQueryDenmarkShipCertPrivate 0 1
-
-  # Create Estonia ship certificate on peer0.veeteedeamet.ee
-  # Expected: Estonia MA can create Estonia ship certificates
-  echo "Creating Denmark certificates on peer0.veeteedeamet.ee ..."
-  chaincodeCreateEstoniaShipCertPrivate 0 2
-  
-  echo "Querying Estonia certificates on peer0.veeteedeamet.ee for verification ..."
-  chaincodeQueryEstoniaShipCertPrivate 0 2
-
-  echo '==================END: Create Private Certificates=================='
-
-
-
-  exit 0
-
-  # ==================Query Ship Part==================
+  echo '================== START: Query Ship Info Transactions =================='
 
   # Query Denmark ship on peer0.dma.dk
   # Expected: Denmark MA could access Denmark ship
@@ -189,23 +139,79 @@ if [ "$SKIP_QUERIES" != "true" ]; then
   echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
   chaincodeQueryEstoniaShip 1 2
 
-  echo '==================END: Query transactions=================='
+  # Query all Denmark ships on peer1.veeteedeamet.ee
+  echo "Querying all Denmark ships on peer1.veeteedeamet.ee ..."
+  chaincodeQueryAllDenmarkShip 1 2
+
+  # Query all Estonia ships on peer0.dma.dk
+  echo "Querying all Estonia ships on peer0.dma.dk ..."
+  chaincodeQueryAllEstoniaShip 0 1
+
+  echo '================== END: Query Ship Info Transactions =================='
+
+
+  echo '================== START: Query Private Certificates Transactions =================='
+
+  # Query Denmark ship certificate on peer0.dma.dk
+  # Expected: Denmark MA could access Denmark ship certificates
+  echo "Querying Denmark certificates on peer0.dma.dk ..."
+  chaincodeQueryDenmarkShipCertPrivate 0 1
+
+  # Query Estonia ship certificate on peer1.veeteedeamet.ee
+  # Expected: Estonia MA could access Estonia ship certificates
+  echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
+  chaincodeQueryEstoniaShipCertPrivate 1 2
+
+  # Query Denmark ship certificate on peer1.veeteedeamet.ee
+  # Expected: Estonia MA could NOT access Denmark ship certificates
+   echo "Querying Denmark certificates on peer1.veeteedeamet.ee ..."
+   chaincodeQueryDenmarkShipCertPrivate 1 2
+
+  # Query Estonia ship certificate on peer0.dma.dk
+  # Expected: Denmark MA could NOT access Estonia ship certificates
+   echo "Querying Denmark certificates on peer0.dma.dk ..."
+   chaincodeQueryEstoniaShipCertPrivate 0 1
+
+  echo '================== END: Query Private Certificates Transactions =================='
+  
+  
+  echo '================== START: Create Private Certificates =================='
+  # Create Denmark ship certificate on peer0.dma.dk
+  # Expected: Denmark MA can create Denmark ship certificates
+  echo "Creating Denmark certificates on peer0.dma.dk ..."
+  chaincodeCreateDenmarkShipCertPrivate 0 1
+
+  echo "Query Denmark certificates on peer0.dma.dk for verification ..."
+  chaincodeQueryDenmarkShipCertPrivate 0 1
+
+  # Create Estonia ship certificate on peer0.veeteedeamet.ee
+  # Expected: Estonia MA can create Estonia ship certificates
+  echo "Creating Denmark certificates on peer0.veeteedeamet.ee ..."
+  chaincodeCreateEstoniaShipCertPrivate 0 2
+  
+  echo "Querying Estonia certificates on peer0.veeteedeamet.ee for verification ..."
+  chaincodeQueryEstoniaShipCertPrivate 0 2
+
+  echo '================== END: Create Private Certificates =================='
+
 
   echo '==================START: Invoke transactions=================='
 
-  # Invoke createPrivateShipCertificate on peer0.dma.dk
-  echo "Sending invoke createPrivateShipCertificate transaction on peer0.dma.dk ..."
-  chaincodeInvokeCreateDenmarkCert 0 1
-
-  # Invoke createPrivateShipCertificate on peer0.veeteedeamet.ee
-  echo "Sending invoke createPrivateShipCertificate transaction on peer0.veeteedeamet.ee ..."
-  chaincodeInvokeCreateEstoniaCert 0 2
-
   # Invoke createShip on peer0.dma.dk and peer0.veeteedeamet.ee
-  echo "Sending invoke createShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-  chaincodeInvokeCreateShip 0 1 0 2
+  echo "Sending invoke createDenmarkShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+  chaincodeInvokeCreateDenmarkShip 0 1 0 2
+
+  echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
+  chaincodeQueryNewDenmarkShip 1 2
+
+  echo "Sending invoke createEstoniaShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
+  chaincodeInvokeCreateEstoniaShip 0 1 0 2
+
+  echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
+  chaincodeQueryNewEstoniaShip 1 2
 
   echo '==================END: Invoke transactions=================='
+
 
   echo '==================START: Query transactions=================='
 
@@ -219,19 +225,8 @@ if [ "$SKIP_QUERIES" != "true" ]; then
   echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
   chaincodeQueryEstoniaShipCert 1 2
 
-  # Query all Denmark ships on peer1.veeteedeamet.ee
-  echo "Querying all Denmark ships on peer1.veeteedeamet.ee ..."
-  chaincodeQueryAllDenmarkShip 1 2
-
-  # Query all Estonia ships on peer0.dma.dk
-  echo "Querying all Estonia ships on peer0.dma.dk ..."
-  chaincodeQueryAllEstoniaShip 0 1
-
   echo '==================END: Query transactions=================='
 
-  # Invoke verifyLocation on peer0.dma.dk and peer0.veeteedeamet.ee
-  echo "Sending invoke verifyLocation transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-  chaincodeInvokeVerifyLocation 0 1 0 2
 fi
 
 echo
