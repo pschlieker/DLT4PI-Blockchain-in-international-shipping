@@ -14,6 +14,7 @@ const path = require('path');
 const ccpPath = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-dma.json');
 const user = 'user1';
 const channelName = 'mychannel';
+const maritimeauthority = 'dma';
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
@@ -36,7 +37,7 @@ app.use(function(req, res, next) {
  *
 **/
 app.get('/queryShips/:country', (req, res, next) => {
-    shippingClient.queryAllShipsByCountry(ccpPath, user, channelName, req.params.country).then(function(ships){
+    shippingClient.queryAllShipsByCountry(ccpPath, user, channelName, maritimeauthority, req.params.country).then(function(ships){
             res.json({status: 'ok', data: JSON.parse(ships)});
     }).catch(function(err){
         console.error(`Failure: ${err}`);
@@ -55,7 +56,7 @@ app.get('/queryShips/:country', (req, res, next) => {
  *
 **/
 app.get("/queryShips", (req, res, next) => {
-    shippingClient.queryAllShips(ccpPath, user, channelName).then(function(ships){
+    shippingClient.queryAllShips(ccpPath, user, channelName, maritimeauthority).then(function(ships){
         res.json({status: 'ok', data: JSON.parse(ships)})
     }).catch(function(err){
         console.error(`Failure: ${err}`);
@@ -75,7 +76,7 @@ app.get("/queryShips", (req, res, next) => {
  *
 **/
 app.get("/queryCertificates/:country/:imo", (req, res, next) => {
-    shippingClient.queryCert(ccpPath, user, channelName, req.params.country, req.params.imo).then(function(certs){
+    shippingClient.queryCert(ccpPath, user, channelName, maritimeauthority, req.params.country, req.params.imo).then(function(certs){
         console.log(`Certs: ${certs}`);
         res.json({status: 'ok', data: JSON.parse(certs)});
     }).catch(function(err){
@@ -117,6 +118,7 @@ app.post("/createCertificate/:country", (req, res, next) => {
         ccpPath,
         user,
         channelName,
+        maritimeauthority,
         country,
         cert.certName,
         cert.certNum,
@@ -159,6 +161,7 @@ app.post("/createShip", (req, res, next) => {
         ccpPath,
         user,
         channelName,
+        maritimeauthority,
         ship.imo,
         ship.name,
         ship.shipType,
