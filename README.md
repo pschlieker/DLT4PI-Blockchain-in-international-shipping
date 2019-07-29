@@ -58,3 +58,11 @@ chaincode on the network. It runs on the Fabric Node SDK (requires Node v8.x).
 
 To test queries without a frontend, run `runFabricModuleTests.js`. To do that, the following commands should be used:
 `node runFabricModuleTests.js`
+
+You could also specifiy different part of tests to run
+```
+node runFabricModuleTests.js testGeneralData
+node runFabricModuleTests.js testPrivateData
+node runFabricModuleTests.js testSharePrivateData
+node runFabricModuleTests.js testAccessCert
+```
