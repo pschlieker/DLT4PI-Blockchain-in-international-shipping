@@ -259,7 +259,6 @@ const self = module.exports = {
             // Get the country of the logged user
             const Mspid = gateway.getClient().getMspid();
             let requestingCountry;
-            console.log(Mspid);
             if (Mspid === 'DmaMSP') {
                 requestingCountry = 'Denmark';
             } else if (Mspid === 'VtaMSP') {

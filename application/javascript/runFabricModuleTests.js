@@ -35,19 +35,20 @@ async function testPrivateData() {
 
     console.log('########## Query Denmark ship certificates as Denmark ##########');
     console.log('########## Expected: Access OK (inside private PDC) ##########');
-    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', '9166778');
+    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', '9166778');
 
     console.log('########## Query Estonia ship certificates as Estonia ##########');
     console.log('########## Expected: Access OK (inside private PDC) ##########');
-    await shippingClient.queryCert(ccpPathEstonia, 'user1', 'mychannel', 'dma', '9148843');
+    await shippingClient.queryCert(ccpPathEstonia, 'user2', 'mychannel', 'vta', 'Estonia', '9148843');
 
     console.log('########## Create private certificate for the ship as Denmark ##########');
+    console.log('########## Name of certificate BRAND NEW International Oil Prevention certificate ##########');
     console.log('########## Expected: Access OK (inside private PDC) ##########');
-    await shippingClient.createPrivateShipCertificate(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', 'NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
+    await shippingClient.createPrivateShipCertificate(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', 'BRAND NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
 
     console.log('########## Query Denmark ship certificates as Denmark ##########');
     console.log('########## Expected: Access OK (inside private PDC) ##########');
-    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', '9166778');
+    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', '9166778');
 
     console.log('########## END PRIVATE DATA TESTS ##########');
 }
@@ -57,18 +58,18 @@ async function testSharePrivateData() {
 
     console.log('########## Query Estonia ship certificates as Denmark ##########');
     console.log('########## Expected: Access OK (inside shared PDC) ##########');
-    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', '9148843');
+    await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Estonia', '9148843');
 
     console.log('########## Query Denmark ship certificates as Estonia ##########');
     console.log('########## Expected: Access OK (inside shared PDC) ##########');
-    await shippingClient.queryCert(ccpPathEstonia, 'user1', 'mychannel', 'dma', '9166778');
+    await shippingClient.queryCert(ccpPathEstonia, 'user2', 'mychannel', 'vta', 'Denmark', '9166778');
 
-    console.log('########## Create shared certificate for the ship ##########');
-    await shippingClient.createSharedShipCertificate(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', 'NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
+    console.log('########## Create shared certificate for the ship by Denmark ##########');
+    await shippingClient.createSharedShipCertificate(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', 'Danish International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
 
     console.log('########## Query Denmark ship certificates as Estonia ##########');
     console.log('########## Expected: Access OK (inside shared PDC) ##########');
-    await shippingClient.queryCert(ccpPathEstonia, 'user1', 'mychannel', 'dma', '9166778');
+    await shippingClient.queryCert(ccpPathEstonia, 'user2', 'mychannel', 'vta', 'Denmark', '9166778');
 
     console.log('########## END SHARED DATA TESTS ##########');
 }
