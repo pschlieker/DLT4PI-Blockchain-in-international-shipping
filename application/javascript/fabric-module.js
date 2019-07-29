@@ -273,6 +273,7 @@ const self = module.exports = {
             }else{
                 console.log('Getting certificate from shared collection');
                 let certs = await this.querySharedCert(ccpPath, username, channelName, maritimeauthority, imo);
+                // If no certificate could be retrieved the permission was denied!
                 if(certs.length === 0){
                     return Promise.reject("Permission denied!");
                 }

@@ -81,12 +81,9 @@ app.get("/queryShips", (req, res, next) => {
 app.get("/queryCertificates/:country/:imo", (req, res, next) => {
     shippingClient.queryCert(ccpPath, user, channelName, maritimeauthority, req.params.country, req.params.imo).then(function(certs){
         if (certs.length === 0) {
-            console.log('NO CERTIFICATES');
             res.json({status: 'ok', data: '[]'});
         }
         else {
-            console.log('YES CERTIFICATES');
-            console.log(`Certs: ${certs}`);
             res.json({status: 'ok', data: JSON.parse(certs)});
         }
 
@@ -211,7 +208,7 @@ app.get("/getCertificate/:certHash", (req, res, next) => {
 });
 
 /**
- * @api {get} /moveShipMock/:imo Mock function to move the ship 9762687 into the range of Denmark
+ * @api {get} /moveShipMock/:imo Mock function to move any ship identified by imo into the range of Denmark
  * @apiName Move Ship Mock
  * 
  * @apiParam {String} imo of country to be moved into the range of Denmark
