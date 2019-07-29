@@ -41,8 +41,13 @@ Clone the repo
 ```
 git clone https://bitbucket.org/fogshot/blockchain-shipping.git
 cd blockchain-shipping
-chmod 777 ./startItAll.sh && ./startItAll.sh
 ```
+
+
+***
+The general init process and starting the fabric network can also be done automatically be running `initNetwork.sh`
+***
+
 
 Navigate to the git repo and install Hyperledger Fabric binaries (platform dependent)
 ```

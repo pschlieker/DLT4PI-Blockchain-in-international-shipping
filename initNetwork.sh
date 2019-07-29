@@ -21,6 +21,3 @@ echo -ne '\n' | ./build-network.sh up -f docker-compose-e2e.yaml -q
 #Reset Enrollement of users
 cd ../application/javascript
 ./resetEnrollement.sh
-
-#Start REST API
-node app.js
