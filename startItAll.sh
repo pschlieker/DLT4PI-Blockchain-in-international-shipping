@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# this script will initalize everything for you after you have cloned the repo under home directory
-cd blockchain-shipping
+#This script is used to start up the backend
+
+#Retrieve platform specific binaries 
 ./bootstrap.sh
 
-cd ./blockchain-shipping/fabric-network
+#Shutdown previous networks
+cd ./fabric-network
 echo -ne '\n' | ./build-network.sh down
 
-cd ./blockchain-shipping/ipfs
+#Install dependencies of application layer
+cd ../ipfs
 npm install
 cd ../application/javascript/
 npm install
@@ -15,7 +18,9 @@ npm install
 cd ../../fabric-network
 echo -ne '\n' | ./build-network.sh up -f docker-compose-e2e.yaml -q
 
+#Reset Enrollement of users
 cd ../application/javascript
 ./resetEnrollement.sh
 
-node application/javascript/app.js
+#Start REST API
+node app.js
