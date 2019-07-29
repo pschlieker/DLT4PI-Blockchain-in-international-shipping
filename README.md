@@ -63,6 +63,7 @@ node runFabricModuleTests.js testGeneralData
 node runFabricModuleTests.js testPrivateData
 node runFabricModuleTests.js testSharePrivateData
 node runFabricModuleTests.js testAccessCert
+node runFabricModuleTests.js testCreateCertificateWithPDF
 ```
 
 ### Frontend
@@ -81,7 +82,7 @@ npm install
 ng serve
 ```
 The webinterface becomes available under http://localhost:4200 .The whole showcase is developed for the country Denmark. Hence this should be selected on startup.  
-Most certificates listed do not include an actual PDF, since they are instantiated as dummy date, during the startup of the system. Certificates containing a PDF are marked with PDF at the beginning.
+The automatically created certificates do not include an actual PDF. This is due to the fact, that they are instantiated as dummy date, during the startup of the system. A certificate containing a PDF can be either created by hand as upload in the interface or using the previously introduced test function `node runFabricModuleTests.js testCreateCertificateWithPDF`.
 
 #### Mock of ship position
 The following call allows a ship to be moved within the territory of Denmark. 
