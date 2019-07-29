@@ -58,3 +58,7 @@ bin
 fabric-network/scripts/updateChaincode\.sh
 
 fabric-network/lastversion
+
+ipfs/package-lock\.json
+
+application/javascript/package-lock\.json
