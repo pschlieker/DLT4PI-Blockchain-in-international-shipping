@@ -202,10 +202,10 @@ const self = module.exports = {
             const contract = network.getContract('sharePrivateData');
 
             //Should be later replaced by the respective countires obtained
-            let countries = 'DenmarkAndEstonia';
+            const countries = 'DenmarkAndEstonia';
 
             // Evaluate the specified transaction.
-            // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
+            // readPrivateShipCertificate - requires 2 argument, e.g. ('readSharedShipCertificate', 'Denmark', '9166778')
             const transactionName = 'readSharedShipCertificate';
             const result = await contract.evaluateTransaction(transactionName, countries, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);

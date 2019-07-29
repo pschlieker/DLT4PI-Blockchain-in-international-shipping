@@ -88,16 +88,16 @@ let Chaincode = class {
     // Endorsement Policy: OR('OrgX.peer', 'OrgY.peer')
     // ==========================================================================
     async readSharedShipCertificate(stub, args) {
-        // e.g. '{"Args":["readSharedShipCertificate", "Denmark", "9274848"]}'
+        // e.g. '{"Args":["readSharedShipCertificate", "DenmarkAndEstonia", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (countries, imo number) ex: DenmarkAndEstonia, 9274848');
         }
-        let countryies = args[0];
+        let countries = args[0];
         let imo = args[1];
 
         // === Get the ship certificate from chaincode state ===
-        let certsAsBytes = await stub.getPrivateData(`Shared${countryies}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`Shared${countries}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
         return certsAsBytes;
     }

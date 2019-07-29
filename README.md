@@ -32,6 +32,17 @@ cd ~/blockchain-shipping/fabric-network
 Launch the network with all test queries
 `./build-network.sh up -f docker-compose-e2e.yaml`
 
+Enroll and Register the initial network participants
+```
+cd ~/blockchain-shipping/application/javascript
+./resetEnrollement.sh
+```
+
+Pull down the network
+```
+cd ~/blockchain-shipping/fabric-network
+./build-network.sh down
+```
 
 Import `./application/javascript/fabric-module.js` into your frontend application to invoke
 chaincode on the network. It runs on the Fabric Node SDK (requires Node v8.x).
