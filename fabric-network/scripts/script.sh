@@ -174,59 +174,6 @@ if [ "$SKIP_QUERIES" != "true" ]; then
 
   echo '================== END: Query Private Certificates Transactions =================='
   
-  
-  echo '================== START: Create Private Certificates =================='
-  # Create Denmark ship certificate on peer0.dma.dk
-  # Expected: Denmark MA can create Denmark ship certificates
-  echo "Creating Denmark certificates on peer0.dma.dk ..."
-  chaincodeCreateDenmarkShipCertPrivate 0 1
-
-  echo "Query Denmark certificates on peer0.dma.dk for verification ..."
-  chaincodeQueryDenmarkShipCertPrivate 0 1
-
-  # Create Estonia ship certificate on peer0.veeteedeamet.ee
-  # Expected: Estonia MA can create Estonia ship certificates
-  echo "Creating Denmark certificates on peer0.veeteedeamet.ee ..."
-  chaincodeCreateEstoniaShipCertPrivate 0 2
-  
-  echo "Querying Estonia certificates on peer0.veeteedeamet.ee for verification ..."
-  chaincodeQueryEstoniaShipCertPrivate 0 2
-
-  echo '================== END: Create Private Certificates =================='
-
-
-  echo '==================START: Invoke transactions=================='
-
-  # Invoke createShip on peer0.dma.dk and peer0.veeteedeamet.ee
-  echo "Sending invoke createDenmarkShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-  chaincodeInvokeCreateDenmarkShip 0 1 0 2
-
-  echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
-  chaincodeQueryNewDenmarkShip 1 2
-
-  echo "Sending invoke createEstoniaShip transaction on peer0.dma.dk & peer0.veeteedeamet.ee ..."
-  chaincodeInvokeCreateEstoniaShip 0 1 0 2
-
-  echo "Querying Estonia ship on peer1.veeteedeamet.ee ..."
-  chaincodeQueryNewEstoniaShip 1 2
-
-  echo '==================END: Invoke transactions=================='
-
-
-  echo '==================START: Query transactions=================='
-
-  # Query Denmark ship certificate on peer0.dma.dk
-  # Expected: Denmark MA could access Denmark ship certificates
-  echo "Querying Denmark certificates on peer0.dma.dk ..."
-  chaincodeQueryDenmarkShipCert 0 1
-
-  # Query Estonia ship certificate on peer1.veeteedeamet.ee
-  # Expected: Estonia MA could access Estonia ship certificates
-  echo "Querying Estonia certificates on peer1.veeteedeamet.ee ..."
-  chaincodeQueryEstoniaShipCert 1 2
-
-  echo '==================END: Query transactions=================='
-
 fi
 
 echo
