@@ -1,7 +1,8 @@
 # blockchain-shipping
 ## Requirements
 * Docker-compose 1.24 (1.18 does not work!)
-* Node runtime LTS version 8.9.0 or higher, up to 9.0 ( Node v9.0+ is not supported )
+* Node runtime LTS version 8.9.0 (Required by Hyperledger Fabric SDK)
+* Angular CLI v8.1.2 (npm install -g @angular/cli)
 
 # Usage
 Clone the repo under home directory
@@ -43,6 +44,14 @@ Pull down the network
 cd ~/blockchain-shipping/fabric-network
 ./build-network.sh down
 ```
+
+Launch the frontend Angular framework
+```
+cd ~/blockchain-shipping/ToopShipping
+npm install
+ng serve
+```
+
 
 Import `./application/javascript/fabric-module.js` into your frontend application to invoke
 chaincode on the network. It runs on the Fabric Node SDK (requires Node v8.x).
