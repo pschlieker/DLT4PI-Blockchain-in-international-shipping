@@ -272,7 +272,11 @@ const self = module.exports = {
                 return this.queryPrivateCert(ccpPath, username, channelName, maritimeauthority, imo);
             }else{
                 console.log('Getting certificate from shared collection');
-                return this.querySharedCert(ccpPath, username, channelName, maritimeauthority, imo);
+                let certs = await this.querySharedCert(ccpPath, username, channelName, maritimeauthority, imo);
+                if(certs.length === 0){
+                    return Promise.reject("Permission denied!");
+                }
+                return certs;
             }
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);

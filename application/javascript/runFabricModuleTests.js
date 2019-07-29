@@ -3,8 +3,12 @@
 const shippingClient = require('./fabric-module');
 const path = require('path');
 const shell = require('shelljs');
+const fs = require('fs');
+const ipfs = require('../../ipfs/ipfs-module');
+
 const ccpPathDenmark = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-dma.json');
 const ccpPathEstonia = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-vta.json');
+
 
 async function testGeneralData() {
     console.log('########## START GENERAL DATA TESTS ##########');
@@ -107,6 +111,39 @@ async function testAccessCert() {
     await shell.exec('./moveShip.sh out');
 }
 
+async function testCreateCertificateWithPDF(){
+    console.log('########## START Create Certificate with PDF (As Denmark) ##########');
+    console.log('########## Create Ship for Denmark ##########');
+    await shippingClient.createShip(ccpPathDenmark, 'user1', 'mychannel', 'dma', '38472334', 'PDF Ship', 'Container Ship', 'Denmark', 'BlockPort', '1234', 'Blocky');
+    
+    console.log('########## Create PDF Certificate ##########');
+    // Creating buffer for ipfs function to add file to the system
+    let fileBuffer = Buffer.from(fs.readFileSync("./IMO_Declaration_Form.pdf"));
+    let certHash = await ipfs.uploadFile(fileBuffer);
+    console.log('PDF file uploaded with hash: : ' + certHash);
+    await shippingClient.createPrivateShipCertificate(
+        ccpPathDenmark,
+        'user1',
+        'mychannel',
+        'dma',
+        'Denmark',
+        'PDF Declaration Form',
+        '38273',
+        '38472334',
+        '29-07-2019',
+        '29-07-2015',
+        certHash
+    );
+
+    console.log('########## Query Created Certificate ##########');
+    let certFromLedger = await shippingClient.queryCert(ccpPathDenmark, 'user1', 'mychannel', 'dma', 'Denmark', '38472334');
+    let certFromLedgerJSON = JSON.parse(certFromLedger);
+
+    console.log('########## Retrieve created certificate from IPFS ##########');
+    let buffer = await ipfs.retrieveFile(certFromLedgerJSON[0].certHash);
+    console.log('Retrieved file of size '+buffer.length);
+}
+
 async function main() {
     let functionToCall = process.argv[2];
 
@@ -123,13 +160,16 @@ async function main() {
     case 'testAccessCert':
         await testAccessCert();
         break;
+    case 'testCreateCertificateWithPDF':
+        await testCreateCertificateWithPDF();
+        break;
     default:
         await testGeneralData();
         await testPrivateData();
         await testSharePrivateData();
         await testAccessCert();
+        await testCreateCertificateWithPDF();
     }
 }
-
 
 main();

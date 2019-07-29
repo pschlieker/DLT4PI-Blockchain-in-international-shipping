@@ -2,7 +2,7 @@
 In order to be able to easily demonstrate the functionality of the prototype, the position API will be mocked. This way, the ship can easly be "moved". 
 ## API Format
 The mocked API follows the structure of https://aprs.fi/page/api Hence it would be easy to use real world data.
-The examples were retrieved using: https://api.aprs.fi/api/get?name=276848000&what=loc&apikey=129319.2zJZqAc8PI9Ru7&format=json
+The examples were retrieved using: https://api.aprs.fi/api/get?name=276848000&what=loc&apikey=keyxyz&format=json
 
 `{
   "command": "get",
@@ -39,8 +39,9 @@ The examples were retrieved using: https://api.aprs.fi/api/get?name=276848000&wh
 }`
 ## Moving the ship
 The script ./moveShip.sh can be used as follows
-* Move ship into range of MA: ./moveShip.sh in
-* Move ship out of range of MA: ./moveShip.sh out 
+* Move ship into range of MA: ./moveShip.sh in imo
+* Move ship out of range of MA: ./moveShip.sh out imo  
+If no IMO is provided 9762687 is used
 ## API Usage
 The docker-compose brings up a simple Apache PHP Container, which provides the API under http://localhost:9001/{IMO_number}
 ## Usage with in Chaincode
@@ -54,5 +55,4 @@ request('http://192.168.179.58:9001/{IMO_number}', { json: true }, (err, res, bo
         let shipLng = body.entries[0].lng;
     });
 ```
-* Because the API lives within another container currently the API ist accessed via the external IP. Should be changed once they are in the same docker network
 * Example see exampleChaincode.js
