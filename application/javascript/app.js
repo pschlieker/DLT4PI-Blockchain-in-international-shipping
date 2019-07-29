@@ -78,8 +78,16 @@ app.get("/queryShips", (req, res, next) => {
  **/
 app.get("/queryCertificates/:country/:imo", (req, res, next) => {
     shippingClient.queryCert(ccpPath, user, channelName, maritimeauthority, req.params.country, req.params.imo).then(function(certs){
-        console.log(`Certs: ${certs}`);
-        res.json({status: 'ok', data: JSON.parse(certs)});
+        if (certs.length === 0) {
+            console.log('NO CERTIFICATES');
+            res.json({status: 'ok', data: '[]'});
+        }
+        else {
+            console.log('YES CERTIFICATES');
+            console.log(`Certs: ${certs}`);
+            res.json({status: 'ok', data: JSON.parse(certs)});
+        }
+
     }).catch(function (err) {
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
