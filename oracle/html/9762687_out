@@ -1,0 +1,33 @@
+{
+  "command": "get",
+  "result": "ok",
+  "what": "loc",
+  "found": 1,
+  "entries": [
+    {
+      "class": "i",
+      "name": "TIIU",
+      "mmsi": "276824000",
+      "type": "a",
+      "time": 1564392067,
+      "lasttime": 1564392067,
+      "lat": "49.7564125",
+      "lng": "-1.6506166",
+      "course": 251.6999969482422,
+      "speed": 19.63120070648193,
+      "srccall": "ESKK",
+      "dstcall": "ais",
+      "comment": "HELTERMAA-ROHUKULA (ETA Jun13 20:20)",
+      "imo": "762687",
+      "vesselclass": "60",
+      "navstat": "0",
+      "heading": "251",
+      "length": "114",
+      "width": "18",
+      "draught": "4.0",
+      "ref_front": "57",
+      "ref_left": "9",
+      "path": "es8tjm"
+    }
+  ]
+}

@@ -65,8 +65,7 @@ let Chaincode = class {
             new PrivateShipCertificate('privShipCert', 'Great Dangerous Cargo Carrying Certificate', '127666', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '223456', '9166778', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
             new PrivateShipCertificate('privShipCert', 'Very Dangerous Cargo Carrying Certificate', '323456', '9148843', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '423456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
-
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '423456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), '')
         ];
 
         // === Save SharedDenmarkAndEstoniaShipCertificates to state ===
@@ -92,7 +91,7 @@ let Chaincode = class {
         // e.g. '{"Args":["readSharedShipCertificate", "Denmark", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
         if (args.length !== 2) {
-            throw new Error('Incorrect number of arguments. Expecting 2 argument (countryies, imo number) ex: DenmarkAndEstonia, 9274848');
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (countries, imo number) ex: DenmarkAndEstonia, 9274848');
         }
         let countryies = args[0];
         let imo = args[1];

@@ -1,30 +1,40 @@
 # blockchain-shipping
 ## Requirements
 * Docker-compose 1.24 (1.18 does not work!)
-* MacOS Binaries
+* Node runtime LTS version 8.9.0 or higher, up to 9.0 ( Node v9.0+ is not supported )
 
 # Usage
-Clone the repo  (`git clone https://bitbucket.org/fogshot/blockchain-shipping.git`)
+Clone the repo under home directory
+```
+cd ~
+git clone https://bitbucket.org/fogshot/blockchain-shipping.git
+```
 
-Install Hyperledger Fabric binaries (platform dependent ) to `./bin` by running `./bootstrap.sh`
+Navigate to the git repo and install Hyperledger Fabric binaries (platform dependent)
+```
+cd blockchain-shipping
+./bootstrap.sh
+```
 
-In the `./fabric-network` directory, use the following command to boot up the fabric network including CAs:
+Install all dependencies
+```
+cd ~/blockchain-shipping/ipfs
+npm install
+cd ../application/javascript/
+npm install
+```
 
+Launch the network (Skip the execution of test queries)
+```
+cd ~/blockchain-shipping/fabric-network
+./build-network.sh up -f docker-compose-e2e.yaml -q
+```
+Launch the network with all test queries
 `./build-network.sh up -f docker-compose-e2e.yaml`
 
-You can skip the execution of test queries by supplying `-q`:
-
-`./build-network.sh up -f docker-compose-e2e.yaml -q`
 
 Import `./application/javascript/fabric-module.js` into your frontend application to invoke
 chaincode on the network. It runs on the Fabric Node SDK (requires Node v8.x).
 
 To test queries without a frontend, run `runFabricModuleTests.js`. To do that, the following commands should be used:
-
-```
-cd ipfs
-npm install
-cd ../application/javascript/
-npm install
-node runFabricModuleTests.js
-```
+`node runFabricModuleTests.js`

@@ -75,28 +75,33 @@ async function testSharePrivateData() {
 }
 
 async function testAccessCert() {
-    console.log('########## START ACCESS CERTIFICATE TESTS ##########');
+    console.log('########## START ACCESS CERTIFICATE TESTS (As Denmark) ##########');
 
     console.log('########## Query the ship ##########');
-    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+    console.log('########## Expected: Access OK ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Estonia', '9762687');
+
+    console.log('########## Move Estonia ship out of Denmark borders ##########');
+    await shell.exec('../../oracle/moveShip.sh out');
 
     console.log('########## Query certs of the ship ##########');
     console.log('########## Expected: Not able to access ##########');
-    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+    await shippingClient.querySharedCert(ccpPath, 'user1', 'mychannel', '9762687');
 
     console.log('########## Check the location of the ship ##########');
-    console.log('########## Ship should be out of Denmark borders ##########');
-    await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+    console.log('########## Expected: false (Ship should be out of Denmark borders) ##########');
+    await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Denmark', '9762687');
 
     console.log('########## Move Estonia ship into Denmark borders ##########');
     await shell.exec('../../oracle/moveShip.sh in');
 
-    console.log('########## Check the location of the ship ##########');
-    await shippingClient.shareShipCertificate(ccpPath, 'user1', 'mychannel', 'Estonia', 'Denmark', '9148843');
+    console.log('########## Share the Estonia Ship Certificate to Denmark ##########');
+    console.log('########## Expected: true (Ship should be inside Denmark borders) ##########');
+    await shippingClient.shareShipCertificate(ccpPath, 'user1', 'mychannel', 'Estonia', 'Denmark', '9762687');
 
     console.log('########## Query certs of the ship ##########');
     console.log('########## Expected: Access OK ##########');
-    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+    await shippingClient.querySharedCert(ccpPath, 'user1', 'mychannel', '9762687');
 
     console.log('########## Move Estonia ship out of Denmark borders ##########');
     await shell.exec('../../oracle/moveShip.sh out');

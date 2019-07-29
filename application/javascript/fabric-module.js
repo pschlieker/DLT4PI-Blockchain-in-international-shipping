@@ -160,7 +160,7 @@ const self = module.exports = {
                 contractName += 'Vta';
             }
 
-            // Get the contract from the network. (generalData, privateData, sharePrivateData)
+            // Get the contract from the network. (generalData, privateDataDma, privateDataVta, sharePrivateData)
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
@@ -176,7 +176,7 @@ const self = module.exports = {
     },
 
     /**
-     * Execute queryCert chaincode
+     * Execute querySharedCert chaincode
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
@@ -247,7 +247,7 @@ const self = module.exports = {
                 requestingCountry = 'Estonia';
             }
 
-            //Decide were to get the certificate from
+            //Decide where to get the certificate from
             //If it is own ship, private certificate, if not shared certificate
             if(requestingCountry === country){
                 console.log('Getting certificate from private collection');
@@ -452,9 +452,6 @@ const self = module.exports = {
     async shareShipCertificate(ccpPath, username, channelName, providingCountry, requestingCountry, imo){
         let positionCheck = await this.verifyLocation(ccpPath, username, channelName, requestingCountry, imo);
 
-        //TODO Integrate & Test Position check!
-        // if(positionCheck.toString() === 'true'){
-
         if(positionCheck.toString() === 'true'){
             console.log('Ship within reach of country!');
 
@@ -464,7 +461,7 @@ const self = module.exports = {
             for(let i=0; i < certs.length; i++){
                 let cert = certs[i];
 
-                await self.createSharedShipCertificate(
+                await this.createSharedShipCertificate(
                     ccpPath,
                     username,
                     channelName,
@@ -511,7 +508,7 @@ const self = module.exports = {
             // verifyLocation - requires 2 argument, e.g. ("verifyLocation", "9166778", "Denmark")
             const transactionName = 'verifyLocation';
             country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
-            console.log(imo + ' ' + country);
+            console.log(`Checking whether ship (${imo}) is inside our borders`);
             const result = await contract.evaluateTransaction(transactionName, imo, country);
             console.log(`Transaction has been evaluated, result is: ${result}`);
             return result;

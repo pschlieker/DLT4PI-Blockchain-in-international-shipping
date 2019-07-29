@@ -118,9 +118,9 @@ let Chaincode = class {
 
         // Get the country's borders
         let maAsBytes = await stub.getState(country);
-        let maForLog = JSON.parse(maAsBytes);
-        maForLog.borders = [];
-        console.log(maForLog.toString());
+        // let maForLog = JSON.parse(maAsBytes);
+        // maForLog.borders = [];
+        // console.log(maForLog.toString());
         let borders = JSON.parse(maAsBytes).borders;
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -130,7 +130,8 @@ let Chaincode = class {
         const result = await rp(api, { json: true }).catch((err) => {console.error(err);});
         let shipLat = Number(result.entries[0].lat);
         let shipLng = Number(result.entries[0].lng);
-        if (geolocation.insidePolygon([shipLat, shipLng], borders)) {
+        console.log(`The ship is now at ${shipLat}, ${{shipLng}}`);
+        if (geolocation.insidePolygon([shipLng, shipLat], borders)) {
             console.info('============= END : Verify Location (true) ===========');
             return Buffer.from('true');
         } else {
@@ -187,9 +188,9 @@ let Chaincode = class {
         let imo = args[1];
 
         let maAsBytes = await stub.getState(country);
-        let maForLog = JSON.parse(maAsBytes);
-        maForLog.borders = maForLog.borders.splice(3, borders.length-4);
-        console.log(maForLog.toString());
+        // let maForLog = JSON.parse(maAsBytes);
+        // maForLog.borders = maForLog.borders.splice(3, borders.length-4);
+        // console.log(maForLog.toString());
         let ship = JSON.parse(maAsBytes).shipList.find(ship => ship.imo === imo);
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
@@ -244,9 +245,9 @@ let Chaincode = class {
         if (!maAsBytes || maAsBytes.toString().length <= 0) {
             throw new Error(country + ' does not exist: ');
         }
-        let maForLog = JSON.parse(maAsBytes);
-        maForLog.borders = maForLog.borders.splice(3, borders.length-4);
-        console.log(maForLog.toString());
+        // let maForLog = JSON.parse(maAsBytes);
+        // maForLog.borders = maForLog.borders.splice(3, borders.length-4);
+        // console.log(maForLog.toString());
         console.info('============= END : Query Maritime Authority ===========');
         return maAsBytes;
     }
