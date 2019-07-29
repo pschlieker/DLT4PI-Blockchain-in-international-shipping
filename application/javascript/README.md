@@ -14,50 +14,47 @@ To interact with the fabric network in your application, import the fabric modul
 
 # Functions
 
-## queryShip
-`queryShip(ccpPath, username, channelName, imo)`
-1. string - `ccpPath`: the path to the connection profile
-2. string - `username`: the username of the peer connected
-3. string - `channelName`: the channel name used
-4. string - `imo`: imo number of the ship
-Return `Buffer`
-
-## queryAllShipsByCountry
-`queryAllShipsByCountry(ccpPath, username, channelName, country)`
-1. string - `ccpPath`: the path to the connection profile
-2. string - `username`: the username of the peer connected
-3. string - `channelName`: the channel name used
-4. string - `country`: the country to be queried
-Return `Buffer`
-
-## grantCertAccess
-`grantCertAccess(ccpPath, username, chaincodeVersion, channelName, requester, target)`
-1. string - `ccpPath`: the path to the connection profile
-2. string - `username`: the username of the peer connected
-3. string - `chaincodeVersion`: the chaincode version to be specified
-4. string - `channelName`: the channel name used
-5. string - `requester`: the requesting maritime authority
-6. string - `target`: the maritime authority to be granted access to the ship certificates
+## createPrivateShipCertificate
+`createPrivateShipCertificate(ccpPath, username, channelName, maritimeauthority,  country, certName, certNum, imo, issueDate, expiryDate, certHash)`
 Return ``
 
-## queryCert
-`queryCert(ccpPath, username, channelName, imo)`
-1. string - `ccpPath`: the path to the connection profile
-2. string - `username`: the username of the peer connected
-3. string - `channelName`: the channel name used
-4. string - `imo`: imo number of the ship
-Return `Buffer`
+## createSharedShipCertificate
+`createSharedShipCertificate(ccpPath, username, channelName, maritimeauthority, country, certName, certNum, imo, issueDate, expiryDate, certHash)`
+Return ``
 
 ## createShip
-`createShip(ccpPath, username, channelName, imo, name, shipType, flag, homePort, tonnage, owner)`
-1. string - `ccpPath`: the path to the connection profile
-2. string - `username`: the username of the peer connected
-3. string - `channelName`: the channel name used
-4. string - `imo`: imo number of the ship
-5. string - `name`
-6. string - `shipType`
-7. string - `flag`
-8. string - `homePort`
-9. number - `tonnage`
-10. string - `owner`
+`createShip(ccpPath, username, channelName, maritimeauthority, imo, name, shipType, flag, homePort, tonnage, owner)`
 Return ``
+
+## queryAllShips
+`queryAllShips(ccpPath, username, channelName, maritimeauthority)`
+Return `Buffer of a JSON array of objects`
+
+## queryAllShipsByCountry
+`queryAllShipsByCountry(ccpPath, username, channelName, maritimeauthority, country)`
+Return `Buffer of a JSON array of objects`
+
+## queryCert
+`queryCert(ccpPath, username, channelName, maritimeauthority, country, imo)`
+Return `Buffer of a JSON object`
+
+## queryPrivateCert
+`queryPrivateCert(ccpPath, username, channelName, maritimeauthority, imo)`
+Return `Buffer of a JSON object`
+
+## querySharedCert
+`querySharedCert(ccpPath, username, channelName, maritimeauthority, imo)`
+Return `Buffer of a JSON object`
+
+## queryShip
+`queryShip(ccpPath, username, channelName, maritimeauthority, country, imo)`
+Return `Buffer of a JSON`
+
+## shareShipCertificate
+`shareShipCertificate(ccpPath, username, channelName, maritimeauthority, providingCountry, requestingCountry, imo)`
+Return ``
+
+## verifyLocation
+`verifyLocation(ccpPath, username, channelName, maritimeauthority, country, imo)`
+Return `Buffer of a true boolean` if ship is within the borders of the requesting country
+Return `Buffer of a false boolean` if ship is outside of the borders of the requesting country
