@@ -1,11 +1,6 @@
 const {FileSystemWallet, Gateway} = require('fabric-network');
 const path = require('path');
 
-// Create a new file system based wallet for managing identities.
-const walletPath = path.join(process.cwd(), 'dma', 'wallet');
-const wallet = new FileSystemWallet(walletPath);
-// console.log(`Wallet path: ${walletPath}`);
-
 const self = module.exports = {
 
     /**
@@ -13,11 +8,15 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country
      * @param {string} imo - imo number of the ship
      */
-    async queryShip(ccpPath, username, channelName, country, imo) {
+    async queryShip(ccpPath, username, channelName, maritimeauthority, country, imo) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -53,10 +52,14 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country
      */
-    async queryAllShipsByCountry(ccpPath, username, channelName, country) {
+    async queryAllShipsByCountry(ccpPath, username, channelName, maritimeauthority, country) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -92,9 +95,13 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      */
-    async queryAllShips(ccpPath, username, channelName) {
+    async queryAllShips(ccpPath, username, channelName, maritimeauthority) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -130,10 +137,14 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} imo - imo number of the ship
      */
-    async queryPrivateCert(ccpPath, username, channelName, imo) {
+    async queryPrivateCert(ccpPath, username, channelName, maritimeauthority, imo) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -180,10 +191,14 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} imo - imo number of the ship
      */
-    async querySharedCert(ccpPath, username, channelName, imo) {
+    async querySharedCert(ccpPath, username, channelName, maritimeauthority, imo) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -221,11 +236,15 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country - country of the ship
      * @param {string} imo - imo number of the ship
      */
-    async queryCert(ccpPath, username, channelName, country, imo) {
+    async queryCert(ccpPath, username, channelName, maritimeauthority, country, imo) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -251,10 +270,10 @@ const self = module.exports = {
             //If it is own ship, private certificate, if not shared certificate
             if(requestingCountry === country){
                 console.log('Getting certificate from private collection');
-                return this.queryPrivateCert(ccpPath, username, channelName, imo);
+                return this.queryPrivateCert(ccpPath, username, channelName, maritimeauthority, imo);
             }else{
                 console.log('Getting certificate from shared collection');
-                return this.querySharedCert(ccpPath, username, channelName, imo);
+                return this.querySharedCert(ccpPath, username, channelName, maritimeauthority, imo);
             }
         } catch (error) {
             console.error(`Failed to evaluate transaction: ${error}`);
@@ -266,6 +285,7 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} imo
      * @param {string} name
      * @param {string} shipType
@@ -274,8 +294,11 @@ const self = module.exports = {
      * @param {number} tonnage
      * @param {string} owner
      */
-    async createShip(ccpPath, username, channelName, imo, name, shipType, flag, homePort, tonnage, owner) {
+    async createShip(ccpPath, username, channelName, maritimeauthority, imo, name, shipType, flag, homePort, tonnage, owner) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -312,6 +335,7 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country
      * @param {string} certName
      * @param {string} certNum
@@ -320,8 +344,11 @@ const self = module.exports = {
      * @param {string} expiryDate
      * @param {string} certHash - the IPFS Hash that links to the PDF certificate
      */
-    async createPrivateShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
+    async createPrivateShipCertificate(ccpPath, username, channelName, maritimeauthority,  country, certName, certNum, imo, issueDate, expiryDate, certHash) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -384,6 +411,7 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country
      * @param {string} certName
      * @param {string} certNum
@@ -392,8 +420,11 @@ const self = module.exports = {
      * @param {string} expiryDate
      * @param {string} certHash - the IPFS Hash that links to the PDF certificate
      */
-    async createSharedShipCertificate(ccpPath, username, channelName, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
+    async createSharedShipCertificate(ccpPath, username, channelName, maritimeauthority, country, certName, certNum, imo, issueDate, expiryDate, certHash) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
@@ -445,17 +476,18 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} providingCountry
      * @param {string} requestingCountry
      * @param {string} imo
      */
-    async shareShipCertificate(ccpPath, username, channelName, providingCountry, requestingCountry, imo){
-        let positionCheck = await this.verifyLocation(ccpPath, username, channelName, requestingCountry, imo);
+    async shareShipCertificate(ccpPath, username, channelName, maritimeauthority, providingCountry, requestingCountry, imo){
+        let positionCheck = await this.verifyLocation(ccpPath, username, channelName, maritimeauthority, requestingCountry, imo);
 
         if(positionCheck.toString() === 'true'){
             console.log('Ship within reach of country!');
 
-            let certsAsByte = await this.queryPrivateCert(ccpPath, username, channelName, imo);
+            let certsAsByte = await this.queryPrivateCert(ccpPath, username, channelName, maritimeauthority, imo);
             let certs = JSON.parse(certsAsByte);
 
             for(let i=0; i < certs.length; i++){
@@ -465,6 +497,7 @@ const self = module.exports = {
                     ccpPath,
                     username,
                     channelName,
+                    maritimeauthority,
                     providingCountry,
                     cert.certName,
                     cert.certNum,
@@ -482,11 +515,15 @@ const self = module.exports = {
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
+     * @param {string} maritimeauthority - maritime authority executing query
      * @param {string} country
      * @param {string} imo
      */
-    async verifyLocation(ccpPath, username, channelName, country, imo) {
+    async verifyLocation(ccpPath, username, channelName, maritimeauthority, country, imo) {
         try {
+            const walletPath = path.join(process.cwd(), maritimeauthority, 'wallet');
+            const wallet = new FileSystemWallet(walletPath);
+
             const userExists = await wallet.exists(username);
             if (!userExists) {
                 console.log(`An identity for the user ${username} does not exist in the wallet`);
