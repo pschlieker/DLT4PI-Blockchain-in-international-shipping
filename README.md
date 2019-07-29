@@ -1,5 +1,7 @@
 # blockchain-shipping
-When ships arrive at the port of foreign countries, they present various certificates. This prototype allows certificates to be shared between different maritime authorities in a secure, tamperproof and privacy preserving way.
+When ships arrive at the port of foreign countries, they present various certificates. This prototype allows certificates to be shared between different maritime authorities in a secure, tamperproof and privacy preserving way.  
+All other deliverables made together with this project can be found here: https://drive.google.com/drive/folders/11PXCbtmnhUgrC2XUWaYte9uVglxtqqpp?usp=sharing  
+A video demonstrating the main feautures is available here: https://drive.google.com/file/d/1TrC3EQ_xR9Ik_1JwrXSi2EO99XFwuI_h/view?usp=sharing
 ## Architecture
 The prototype has 5 components:  
 
