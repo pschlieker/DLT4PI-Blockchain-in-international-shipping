@@ -122,7 +122,7 @@ Some Popup-Blockers might block the PDF from being opened.
 The following call allows a ship to be moved within the territory of Denmark. 
 `http://localhost:3000/moveShipMock/imo`
 An example is prepared for the ship with the imo 9762687.
-1. When the system is first started, the ship (3827367 TIIU Zoo) will be displayed, but no certificates are visible.
+1. When the system is first started, the ship (9762687 TIIU Zoo) will be displayed, but no certificates are visible.
 2. The ship can be moved to Denmark by making a GET-Request on  `http://localhost:3000/moveShipMock/9762687`
 3. The certificates can now be displayed
 
