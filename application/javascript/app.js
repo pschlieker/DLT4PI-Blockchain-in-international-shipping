@@ -1,12 +1,11 @@
+'use strict'
 
 var express = require("express");
 var bodyParser = require('body-parser')
 var app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(bodyParser.json({limit: '50mb', extended: true}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 const ipfs = require('../../ipfs/ipfs-module');
 const shippingClient = require('./fabric-module');
@@ -14,13 +13,15 @@ const path = require('path');
 const ccpPath = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-dma.json');
 const user = 'user1';
 const channelName = 'mychannel';
+const multer = require('multer');
+const upload = multer();
 const maritimeauthority = 'dma';
 
 app.listen(3000, () => {
     console.log('Server running on port 3000');
 });
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
@@ -54,14 +55,14 @@ app.get('/queryShips/:country', (req, res, next) => {
  * @apiSuccess {json} {status: 'ok', data: [{ship}]}
  * @apiError {json} {status: 'error', details: err}
  *
-**/
+ **/
 app.get("/queryShips", (req, res, next) => {
     shippingClient.queryAllShips(ccpPath, user, channelName, maritimeauthority).then(function(ships){
         res.json({status: 'ok', data: JSON.parse(ships)})
-    }).catch(function(err){
+    }).catch(function (err) {
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
-   });
+    });
 });
 
 /**
@@ -74,12 +75,12 @@ app.get("/queryShips", (req, res, next) => {
  * @apiSuccess {json} {status: 'ok', data: {[certificate]} }
  * @apiError {json} {status: 'error', details: err}
  *
-**/
+ **/
 app.get("/queryCertificates/:country/:imo", (req, res, next) => {
     shippingClient.queryCert(ccpPath, user, channelName, maritimeauthority, req.params.country, req.params.imo).then(function(certs){
         console.log(`Certs: ${certs}`);
         res.json({status: 'ok', data: JSON.parse(certs)});
-    }).catch(function(err){
+    }).catch(function (err) {
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
     });
@@ -102,38 +103,32 @@ app.get("/queryCertificates/:country/:imo", (req, res, next) => {
  * @apiSuccess {json} {status: 'ok'}
  * @apiError {json} {status: 'error', details: err}
  *
-**/
-app.post("/createCertificate/:country", (req, res, next) => {
-    let cert = req.body;
-    let country = req.params.country;
-
-    let certHash = 'missinghash';
-
-    /**
-     * TODO Handle file upload
-     * certHash = await ipfs.uploadFile('mssing buffer');
-     */
-
-    shippingClient.createPrivateShipCertificate(
-        ccpPath,
-        user,
-        channelName,
-        maritimeauthority,
-        country,
-        cert.certName,
-        cert.certNum,
-        cert.imo,
-        cert.issueDate,
-        cert.expiryDate,
-        certHash
-    ).then(function(certs){
-        console.log(`Created new certificate`);
-        res.json({status: 'ok'});
-    }).catch(function(err){
-        console.error(`Failure: ${err}`);
-        res.json({status: 'error', details: err});
-    });
-});
+ **/
+app.post("/createCertificate/:country", upload.single('file'), async (req, res, next) => {
+        let country = req.params.country;
+        let certHash = 'missinghash';
+        certHash = await ipfs.uploadFile(req.file.buffer);
+        console.log('PDF file uploaded with hash: : ' + certHash);
+        shippingClient.createPrivateShipCertificate(
+            ccpPath,
+            user,
+            channelName,
+            country,
+            cert.certName,
+            cert.certNum,
+            cert.imo,
+            cert.issueDate,
+            cert.expiryDate,
+            certHash
+        ).then(function (certs) {
+            console.log(`Created new certificate`);
+            res.json({status: 'ok'});
+        }).catch(function (err) {
+            console.error(`Failure: ${err}`);
+            res.json({status: 'error', details: err});
+        });
+    }
+);
 
 /**
  * @api {post} /createShip Create new ship
@@ -153,7 +148,7 @@ app.post("/createCertificate/:country", (req, res, next) => {
  * @apiSuccess {json} {status: 'ok'}
  * @apiError {json} {status: 'error', details: err}
  *
-**/
+ **/
 app.post("/createShip", (req, res, next) => {
     let ship = req.body;
 
@@ -169,10 +164,10 @@ app.post("/createShip", (req, res, next) => {
         ship.homePort,
         ship.tonnage,
         ship.owner
-    ).then(function(certs){
+    ).then(function (certs) {
         console.log(`Created new Ship`);
         res.json({status: 'ok'});
-    }).catch(function(err){
+    }).catch(function (err) {
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
     });
@@ -187,9 +182,9 @@ app.post("/createShip", (req, res, next) => {
  * @apiSuccess {pdffile} certificate as application/pdf
  * @apiError {json} {status: 'error', details: err}
  *
-**/
+ **/
 app.get("/getCertificate/:certHash", (req, res, next) => {
-    ipfs.retrieveFile(req.params.certHash).then(function(pdfData){
+    ipfs.retrieveFile(req.params.certHash).then(function (pdfData) {
         console.log(pdfData.length);
         res.writeHead(200, {
             'Content-Type': 'application/pdf',
@@ -197,7 +192,7 @@ app.get("/getCertificate/:certHash", (req, res, next) => {
             'Content-Length': pdfData.length
         });
         res.end(pdfData);
-    }).catch(function(err){
+    }).catch(function (err) {
         console.error(`Failure: ${err}`);
         res.json({status: 'error', details: err});
     });

@@ -1,77 +1,129 @@
 <div *ngIf="permission == undefined">
   <h3 class="heading-margin">Please wait...</h3>
 </div>
+
 <div *ngIf="permission == false">
   <h3 class="heading-margin">You don't have permission to view this ship's certificates!</h3>
   <button type="button" class="btn-sm btn-secondary button-margin" routerLink="/ships/{{selectedCountry}}">
     Return to ships list
   </button>
 </div>
+
 <div *ngIf="permission == true">
-  <h3 class="heading-margin" *ngIf="shipId !== undefined">Certificate list for ship ID #  {{shipId}}</h3>
+  <h3 class="heading-margin" *ngIf="shipId !== undefined">Certificate list for ship ID # {{shipId}}</h3>
 
   <div *ngIf="shipId !== undefined">
-  <button type="button" class="btn-sm btn-secondary button-margin" routerLink="/ships/{{selectedCountry}}">
-    Return to ships list
-  </button>
-  <!-- Button trigger modal -->
-  <!--<button type="button" class="btn-sm btn-primary" data-toggle="modal" data-target="#addCertificateModal">-->
-    <!--Add a certificate-->
-  <!--</button>-->
-  <div class="row"></div>
-  <!--<button (click)="downloadCertificate()">Download</button>-->
+    <button type="button" class="btn-sm btn-secondary button-margin" routerLink="/ships/{{selectedCountry}}">
+      Return to ships list
+    </button>
+    <!--Button trigger modal-->
+    <button type="button" class="btn-sm btn-primary" data-toggle="modal" data-target="#addCertificateModal">
+      Add a certificate
+    </button>
+    <div class="row"></div>
+    <!--<button (click)="downloadCertificate()">Download</button>-->
 
-  <!-- Certificates table -->
-  <table class="table" style="margin-top: 5%">
-    <thead>
+    <!-- Certificates table -->
+    <table class="table" style="margin-top: 5%">
+      <thead>
       <tr>
         <th scope="col">Certificate ID</th>
         <th scope="col">Certificate name</th>
         <th scope="col"></th>
         <!--<th *ngIf="selectedCountry == shipCountry" scope="col"></th>-->
       </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
       <tr *ngFor="let certificate of certificateList">
         <td scope="col">{{certificate.certNum}}</td>
         <td scope="col">{{certificate.certName}}</td>
-        <td scope="col"><button type="button" class="btn-sm btn-primary" (click)="viewCertificate(certificate.file)">
-          View Certificate</button></td>
-        <!--<td *ngIf="selectedCountry == shipCountry" scope="col">-->
-          <!--<button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">-->
-          <!--Delete Certificate</button></td>-->
-      <!--</tr>-->
-    </tbody>
-  </table>
-
-  <!-- Modal -->
-  <div class="modal fade" id="addCertificateModal" tabindex="-1" role="dialog" aria-labelledby="addCertificateTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addCertificateTitle">Add a certificate</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+        <td scope="col">
+          <button type="button" class="btn-sm btn-primary" (click)="viewCertificate(certificate.certHash)">
+            View Certificate
           </button>
-        </div>
-        <div class="modal-body">
-          <div class="input-group mb-3">
-            <div class="input-group-prepend">
+        </td>
+        <!--<td *ngIf="selectedCountry == shipCountry" scope="col">-->
+        <!--<button type="button" class="btn-sm btn-danger" (click)="deleteCertificate(certificate.certificateId)">-->
+        <!--Delete Certificate</button></td>-->
+        <!--</tr>-->
+      </tbody>
+    </table>
+
+    <!-- Modal -->
+    <form id="addFileForm">
+      <div class="modal fade" id="addCertificateModal" tabindex="-1" role="dialog" aria-labelledby="addCertificateTitle"
+           aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addCertificateTitle">Add a certificate</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-            <div class="custom-file">
-              <input type="file" accept=".pdf" class="custom-file-input" id="inputGroupFile01" (change)="uploadFile($event)">
-              <label *ngIf="newCertificate.data === undefined" class="custom-file-label" for="inputGroupFile01">Choose file...</label>
-              <label *ngIf="newCertificate.data !== undefined && newCertificate.data.name !== undefined" class="custom-file-label" for="inputGroupFile01">
-                {{newCertificate.data.name}}</label>
+            <div class="modal-body">
+
+              <!--Upload File Field-->
+              <div class="input-group mb-3">
+                <div class="input-group-prepend"></div>
+                <div class="custom-file">
+                  <input type="file" name="file" accept=".pdf" class="custom-file-input" id="inputGroupFile01"
+                         (change)="uploadFile($event)">
+                  <label *ngIf="newCertificate.data === undefined" class="custom-file-label" for="inputGroupFile01">Choose
+                    file...</label>
+                  <label *ngIf="newCertificate.data !== undefined && newCertificate.data.name !== undefined"
+                         class="custom-file-label" for="inputGroupFile01">
+                    {{newCertificate.data.name}}</label>
+                </div>
+              </div>
+
+              <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="certNum">Certificate Number</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Small" aria-describedby="certNum" name="certNum">
+              </div>
+
+              <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="certName">Certificate Name</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Small" aria-describedby="certName" name="certName">
+              </div>
+
+              <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="imo" hidden>Ship IMO</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Small" aria-describedby="imo" name="imo" [value]="shipId" hidden>
+              </div>
+
+              <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="issueDate" hidden>Issue Date</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Small" aria-describedby="issueDate" name="issueDate" [value]="date" hidden>
+              </div>
+
+              <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="expiryDate" hidden>Expiry Date</span>
+                </div>
+                <input type="text" class="form-control" aria-label="Small" aria-describedby="expiryDate" name="expiryDate" [value]="date" hidden>
+              </div>
+
             </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="uploadCSVFile()">Save
+                changes
+              </button>
+            </div>
+
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button>
-        </div>
       </div>
-    </div>
-  </div>
+  </form>
 </div>
 </div>
