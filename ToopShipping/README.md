@@ -1,27 +1,26 @@
-# ToopShipping
+# ToopShipping Frontend
+The proof-of-concept can also be run with a Webinterface.
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.1.1.
+Launch the Node JS REST-API Backend
+```
+# folder ../application/javascript
+node app.js
+```
 
-## Development server
+Launch the frontend Angular framework
+```
+# folder ./ToopShipping
+npm install
+ng serve
+```
+The webinterface becomes available under http://localhost:4200 .The whole showcase is developed for the country Denmark. Hence this should be selected on startup.  
+The automatically created certificates do not include an actual PDF. This is due to the fact, that they are instantiated as dummy date, during the startup of the system. A certificate containing a PDF can be either created by hand as upload in the interface or using the previously introduced test function `node runFabricModuleTests.js testCreateCertificateWithPDF`.   
+Some Popup-Blockers might block the PDF from being opened.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+#### Mock of ship position
+The following call allows a ship to be moved within the territory of Denmark. 
+`http://localhost:3000/moveShipMock/imo`
+An example is prepared for the ship with the imo 9762687.
+1. When the system is first started, the ship (9762687 TIIU Zoo) will be displayed, but no certificates are visible.
+2. The ship can be moved to Denmark by making a GET-Request on  `http://localhost:3000/moveShipMock/9762687`
+3. The certificates can now be displayed
