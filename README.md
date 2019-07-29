@@ -107,6 +107,10 @@ node runFabricModuleTests.js testCreateCertificateWithPDF
 ### Frontend
 The proof-of-concept can also be run with a Webinterface.
 
+***
+The frontend can also be started by running `startAPI.sh` and `startFrontend.sh`
+***
+
 Launch the Node JS REST-API Backend
 ```
 # folder ./application/javascript
