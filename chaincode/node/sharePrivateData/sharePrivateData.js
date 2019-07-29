@@ -58,15 +58,14 @@ let Chaincode = class {
      * create initial shared private data for the Vta & Dma Organisation
      * Endorsement Policy: "OR('DmaMSP.member', 'VtaMSP.member')"
      */
-    async initSharedPrivateLedge(stub, args) {
+    async initSharedPrivateLedger(stub, args) {
         console.info('============= START : Initialize Dma Vta Shared Private Data ===========');
         // === Create PrivateShipCertificates private data collections, save to state ===
         let SharedDenmarkAndEstoniaShipCertificates = [
             new PrivateShipCertificate('privShipCert', 'Great Dangerous Cargo Carrying Certificate', '127666', '9166778', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
             new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '223456', '9166778', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
             new PrivateShipCertificate('privShipCert', 'Very Dangerous Cargo Carrying Certificate', '323456', '9148843', new Date(2018, 1, 1), new Date(2020, 1, 1), ''),
-            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '423456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
-
+            new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '423456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), '')
         ];
 
         // === Save SharedDenmarkAndEstoniaShipCertificates to state ===
@@ -89,16 +88,16 @@ let Chaincode = class {
     // Endorsement Policy: OR('OrgX.peer', 'OrgY.peer')
     // ==========================================================================
     async readSharedShipCertificate(stub, args) {
-        // e.g. '{"Args":["readSharedShipCertificate", "Denmark", "9274848"]}'
+        // e.g. '{"Args":["readSharedShipCertificate", "DenmarkAndEstonia", "9274848"]}'
         console.info('============= START : Reading Ship Certificates ===========');
         if (args.length !== 2) {
-            throw new Error('Incorrect number of arguments. Expecting 2 argument (countryies, imo number) ex: DenmarkAndEstonia, 9274848');
+            throw new Error('Incorrect number of arguments. Expecting 2 argument (countries, imo number) ex: DenmarkAndEstonia, 9274848');
         }
-        let countryies = args[0];
+        let countries = args[0];
         let imo = args[1];
 
         // === Get the ship certificate from chaincode state ===
-        let certsAsBytes = await stub.getPrivateData(`Shared${countryies}ShipCertificates`, imo);
+        let certsAsBytes = await stub.getPrivateData(`Shared${countries}ShipCertificates`, imo);
         console.info('============= END : Reading Ship Certificates ===========');
         return certsAsBytes;
     }
@@ -110,7 +109,7 @@ let Chaincode = class {
     async sharePrivateShipCertificate(stub, args) {
         console.info('============= START : Creating Ship Certificate using Transient Data ===========');
         if (args.length !== 2) {
-              throw new Error('Incorrect number of arguments. Expecting 1 argument (country, imo).'+
+              throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo).'+
                 'The transient data contains the certificate as JSON '+
                 '{"certName":"NEW International Oil Prevention certificate", "certNum": "901234", "imo": "9166778", "issueDate":"2030-01-01", "expiryDate":"2031-12-31", "certHash":"IPFS_Hash_to_Cert"}');
         }
@@ -141,7 +140,14 @@ let Chaincode = class {
 
         // === Get the certificates of the ship from the state ===
         let certsAsBytes = await stub.getPrivateData(`Shared${countries}ShipCertificates`, imo);
-        let certs = JSON.parse(certsAsBytes);
+
+        let certs;
+        if(certsAsBytes.length == 0){
+          certs = [];
+        }else{
+          certs = JSON.parse(certsAsBytes);
+        }
+
         console.log('List of certificates: ' + certs);
         // === Push the new certificates into the list of certificates ===
         certs.push(newCert);

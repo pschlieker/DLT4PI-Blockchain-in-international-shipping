@@ -6,19 +6,20 @@ const Client = require('fabric-client');
 const path = require('path');
 
 let client = Client.loadFromConfig('../../fabric-network/connection.yaml');
+client.loadFromConfig('../../fabric-network/vtaClient.yaml');
 let fabricCAClient;
 let adminUser;
 
-const walletPath = path.join(process.cwd(), 'dma', 'wallet');
+const walletPath = path.join(process.cwd(), 'vta', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 console.log(`Wallet path: ${walletPath}`);
 
-function enrollUser(enrollmentID, secret) {
+function enrollUser(enrollmentID, secret, mspId = 'VtaMSP', username = 'user2') {
     fabricCAClient.enroll({ enrollmentID: enrollmentID, enrollmentSecret: secret }).then((enrollment) => {
         console.log(enrollment);
-        const userIdentity = X509WalletMixin.createIdentity('DmaMSP', enrollment.certificate, enrollment.key.toBytes());
-        wallet.import('user1', userIdentity).then(() => {});
-        console.log('Successfully registered and enrolled user "user1" and imported it into the wallet');
+        const userIdentity = X509WalletMixin.createIdentity(mspId, enrollment.certificate, enrollment.key.toBytes());
+        wallet.import(username, userIdentity).then(() => {});
+        console.log(`Successfully registered and enrolled user ${username} and imported it into the wallet`);
     }, (reason) => {
         console.error('Failed to enroll user: ' + reason);
     });
@@ -44,7 +45,7 @@ adminUser = client.initCredentialStores().then(() => {
             console.log('Successfully enrolled admin user "admin"');
             return client.createUser({
                 username: 'admin',
-                mspid: 'DmaMSP',
+                mspid: 'VtaMSP',
                 cryptoContent: { privateKeyPEM: enrollment.key.toBytes(), signedCertPEM: enrollment.certificate }
             });
         }).then((user) => {

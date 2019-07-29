@@ -1,0 +1,12 @@
+name: "Dma Client"
+version: "1.0"
+
+client:
+  organization: Dma
+  credentialStore:
+    path: "/tmp/hfc-kvs/dma"
+    cryptoStore:
+      path: "/tmp/hfc-cvs/dma"
+  connection:
+    options:
+      grpc.keepalive_time_ms: 120000

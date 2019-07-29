@@ -17,15 +17,6 @@ description: "A network connecting maritime authorities of different countries t
 #
 version: "1.0"
 
-client:
-  organization: Dma
-  credentialStore:
-    path: "/tmp/hfc-kvs/dma"
-    cryptoStore:
-      path: "/tmp/hfc-cvs/dma"
-  connection:
-    options:
-      grpc.keepalive_time_ms: 120000
 #
 # [Optional]. But most apps would have this section so that channel objects can be constructed
 # based on the content below. If an app is creating channels, then it likely will not need this

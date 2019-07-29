@@ -1,40 +1,41 @@
 # Oracle Service
 In order to be able to easily demonstrate the functionality of the prototype, the position API will be mocked. This way, the ship can easly be "moved". 
 ## API Format
-The mocked API follows the structure of https://aprs.fi/page/api Hence it would be easy to use real world data. The examples were retrieved using: https://api.aprs.fi/api/get?name=311003200&what=loc&apikey=128413.pwWuYRfPnnU3K4L&format=json
+The mocked API follows the structure of https://aprs.fi/page/api Hence it would be easy to use real world data.
+The examples were retrieved using: https://api.aprs.fi/api/get?name=276848000&what=loc&apikey=129319.2zJZqAc8PI9Ru7&format=json
 
 `{
-    "command": "get",
-    "result": "ok",
-    "what": "loc",
-    "found": 1,
-    "entries": [
-        {
-            "class": "i",
-            "name": "AOTEA MAERSK",
-            "mmsi": "219791000",
-            "type": "a",
-            "time": "1558495346",
-            "lasttime": "1558495346",
-            "lat": "53.869795",
-            "lng": "9.274025",
-            "course": "335",
-            "speed": "34",
-            "srccall": "OYJS2",
-            "dstcall": "ais",
-            "comment": "NZUFX TWKAO (ETA Jun02 00:00)",
-            "imo": "9166778",
-            "vesselclass": "71",
-            "navstat": "0",
-            "heading": "330",
-            "length": "347",
-            "width": "43",
-            "draught": "13.6",
-            "ref_front": "245",
-            "ref_left": "21",
-            "path": "ZL3RUM"
-        }
-    ]
+  "command": "get",
+  "result": "ok",
+  "what": "loc",
+  "found": 1,
+  "entries": [
+    {
+      "class": "i",
+      "name": "TIIU",
+      "mmsi": "276824000",
+      "type": "a",
+      "time": 1564392067,
+      "lasttime": 1564392067,
+      "lat": 58.88395,
+      "lng": 23.17621666666667,
+      "course": 251.6999969482422,
+      "speed": 19.63120070648193,
+      "srccall": "ESKK",
+      "dstcall": "ais",
+      "comment": "HELTERMAA-ROHUKULA (ETA Jun13 20:20)",
+      "imo": "762687",
+      "vesselclass": "60",
+      "navstat": "0",
+      "heading": "251",
+      "length": "114",
+      "width": "18",
+      "draught": "4.0",
+      "ref_front": "57",
+      "ref_left": "9",
+      "path": "es8tjm"
+    }
+  ]
 }`
 ## Moving the ship
 The script ./moveShip.sh can be used as follows

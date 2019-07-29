@@ -1,13 +1,12 @@
 const {FileSystemWallet, Gateway} = require('fabric-network');
 const path = require('path');
-const fs = require('fs');
 
 // Create a new file system based wallet for managing identities.
 const walletPath = path.join(process.cwd(), 'dma', 'wallet');
 const wallet = new FileSystemWallet(walletPath);
 // console.log(`Wallet path: ${walletPath}`);
 
-module.exports = {
+const self = module.exports = {
 
     /**
      * Execute queryShip chaincode
@@ -155,13 +154,13 @@ module.exports = {
             let contractName = 'privateData';
             if (Mspid === 'DmaMSP') {
                 country = 'Denmark';
-                contractName += "Dma";
+                contractName += 'Dma';
             } else if (Mspid === 'VtaMSP') {
                 country = 'Estonia';
-                contractName += "Vta";
+                contractName += 'Vta';
             }
 
-            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
+            // Get the contract from the network. (generalData, privateDataDma, privateDataVta, sharePrivateData)
             const contract = network.getContract(contractName);
 
             // Evaluate the specified transaction.
@@ -176,8 +175,8 @@ module.exports = {
         }
     },
 
-     /**
-     * Execute queryCert chaincode
+    /**
+     * Execute querySharedCert chaincode
      * @param {string} ccpPath - path to connection profile
      * @param {string} username - username of the peer
      * @param {string} channelName
@@ -199,14 +198,14 @@ module.exports = {
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
 
-            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
-            const contract = network.getContract("sharePrivateData");
+            // Get the contract from the network. (generalData, privateData, sharePrivateData)
+            const contract = network.getContract('sharePrivateData');
 
             //Should be later replaced by the respective countires obtained
-            let countries = "DenmarkAndEstonia";
+            const countries = 'DenmarkAndEstonia';
 
             // Evaluate the specified transaction.
-            // readPrivateShipCertificate - requires 2 argument, e.g. ('readPrivateShipCertificate', 'Denmark', '9274848')
+            // readPrivateShipCertificate - requires 2 argument, e.g. ('readSharedShipCertificate', 'Denmark', '9166778')
             const transactionName = 'readSharedShipCertificate';
             const result = await contract.evaluateTransaction(transactionName, countries, imo);
             console.log(`Transaction has been evaluated, result is: ${result.toString()}`);
@@ -248,13 +247,13 @@ module.exports = {
                 requestingCountry = 'Estonia';
             }
 
-            //Decide were to get the certificate from
+            //Decide where to get the certificate from
             //If it is own ship, private certificate, if not shared certificate
-            if(requestingCountry == country){
-                console.log("Getting certificate from private collection");
+            if(requestingCountry === country){
+                console.log('Getting certificate from private collection');
                 return this.queryPrivateCert(ccpPath, username, channelName, imo);
             }else{
-                console.log("Getting certificate from shared collection");
+                console.log('Getting certificate from shared collection');
                 return this.querySharedCert(ccpPath, username, channelName, imo);
             }
         } catch (error) {
@@ -291,7 +290,7 @@ module.exports = {
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
 
-            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
+            // Get the contract from the network. (generalData, privateData, sharePrivateData)
             const contract = network.getContract('generalData');
 
             // Submit the specified transaction.
@@ -343,10 +342,10 @@ module.exports = {
             let contractName = 'privateData';
             if (Mspid === 'DmaMSP') {
                 country = 'Denmark';
-                contractName += "Dma";
+                contractName += 'Dma';
             } else if (Mspid === 'VtaMSP') {
                 country = 'Estonia';
-                contractName += "Vta";
+                contractName += 'Vta';
             }
 
             // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
@@ -367,7 +366,7 @@ module.exports = {
 
             // Create Transaction and submit
             const transactionName = 'createPrivateShipCertificate';
-            const result = await contract.createTransaction(transactionName)
+            await contract.createTransaction(transactionName)
                 .setTransient(transientData)
                 .submit(country, imo);
 
@@ -409,9 +408,9 @@ module.exports = {
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
 
-            let countries = "DenmarkAndEstonia";
+            let countries = 'DenmarkAndEstonia';
 
-            // Get the contract from the network. (generalData, privateDataVta, privateDataDma, sharePrivateData)
+            // Get the contract from the network. (generalData, privateData, sharePrivateData)
             const contract = network.getContract('sharePrivateData');
 
             // private data
@@ -426,7 +425,7 @@ module.exports = {
 
             // Create Transaction and submit
             const transactionName = 'sharePrivateShipCertificate';
-            const result = await contract.createTransaction(transactionName)
+            await contract.createTransaction(transactionName)
                 .setTransient(transientData)
                 .submit(countries, imo);
 
@@ -450,51 +449,32 @@ module.exports = {
      * @param {string} requestingCountry
      * @param {string} imo
      */
-    async shareShipCertificate(cccPath, username, channelName, providingCountry, requestingCountry, imo){
-        let positionCheck = await this.verifyLocation(cccPath, username, channelName, requestingCountry, imo);
+    async shareShipCertificate(ccpPath, username, channelName, providingCountry, requestingCountry, imo){
+        let positionCheck = await this.verifyLocation(ccpPath, username, channelName, requestingCountry, imo);
 
-        if(positionCheck){
-            try {
-                const userExists = await wallet.exists(username);
-                if (!userExists) {
-                    console.log(`An identity for the user ${username} does not exist in the wallet`);
-                    console.log('Run the registerUser before retrying');
-                    return;
-                }
-    
-                // Create a new gateway for connecting to our peer node.
-                const gateway = new Gateway();
-                await gateway.connect(ccpPath, {wallet, identity: username, discovery: {enabled: true, asLocalhost: true}});
-    
-                // Get the network (channel) our contract is deployed to.
-                const network = await gateway.getNetwork(channelName);
- 
-                   
-                // Get the country of the queried ship
-                let contract = network.getContract('generalData');
-                const ship = await contract.evaluateTransaction('queryShip', country, imo);
-                console.log(`Evaluated queryShip transaction, result is ${ship.toString()}`);
-                const targetCountry = JSON.parse(ship.toString()).flag;
-                console.log('Target Country: ' + targetCountry);
-    
-                // Check the location of the ship by calling the verifyLocation chaincode
-                contract = network.getContract('generalData');
-                const isWithinBorder = await contract.evaluateTransaction('verifyLocation', imo, requester);
-                console.log(`Evaluated verifyLocation transaction, result is: ${isWithinBorder.toString()}`);
-    
-                // If consensus is reached on the location of the ship (i.e. ship is within the requester's borders)
-                if (isWithinBorder) {
-                    await this.grantCertAccess(ccpPath, username, channelName, requester, targetCountry);
-                    console.log(`Certificates of ship ${imo}: Access Granted`);
-                } else {
-                    console.log(`The ship ${imo} is not within ${requester}'s borders`);
-                }
-    
-            } catch (error) {
-                console.error(`Failed to evaluate transaction: ${error}`);
+        if(positionCheck.toString() === 'true'){
+            console.log('Ship within reach of country!');
+
+            let certsAsByte = await this.queryPrivateCert(ccpPath, username, channelName, imo);
+            let certs = JSON.parse(certsAsByte);
+
+            for(let i=0; i < certs.length; i++){
+                let cert = certs[i];
+
+                await this.createSharedShipCertificate(
+                    ccpPath,
+                    username,
+                    channelName,
+                    providingCountry,
+                    cert.certName,
+                    cert.certNum,
+                    cert.imo,
+                    cert.issueDate,
+                    cert.expiryDate,
+                    cert.certHash
+                );
             }
         }
-
     },
 
     /**
@@ -521,14 +501,14 @@ module.exports = {
             // Get the network (channel) our contract is deployed to.
             const network = await gateway.getNetwork(channelName);
 
-            // Get the contract from the network. (generalData, generalDataSolo, privateData, sharePrivateData)
+            // Get the contract from the network. (generalData, privateData, sharePrivateData)
             const contract = network.getContract('generalData');
 
             // Evaluate the specified transaction.
-            // verifyLocation - requires 2 argument, e.g. ("verifyLocation", "9166778", "Estonia")
+            // verifyLocation - requires 2 argument, e.g. ("verifyLocation", "9166778", "Denmark")
             const transactionName = 'verifyLocation';
             country = country.charAt(0).toUpperCase() + country.slice(1).toLowerCase();
-            console.log(imo + ' ' + country);
+            console.log(`Checking whether ship (${imo}) is inside our borders`);
             const result = await contract.evaluateTransaction(transactionName, imo, country);
             console.log(`Transaction has been evaluated, result is: ${result}`);
             return result;
