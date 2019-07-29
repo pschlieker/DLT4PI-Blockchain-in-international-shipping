@@ -5,10 +5,12 @@
 * Angular CLI v8.1.2 (npm install -g @angular/cli)
 
 # Usage
-Clone the repo under home directory
+Clone the repo under home directory and run the script to spin up all the components
 ```
 cd ~
 git clone https://bitbucket.org/fogshot/blockchain-shipping.git
+cd blockchain-shipping
+chmod 777 ./startItAll.sh && ./startItAll.sh
 ```
 
 Navigate to the git repo and install Hyperledger Fabric binaries (platform dependent)
