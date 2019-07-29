@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
+
 const axios = require('axios');
-// import * as axios from 'axios';
-// import {CertificateService} from "./certificate.service";
+const fetch = require('node-fetch');
 
 @Component({
   selector: 'app-certificates',
@@ -17,12 +17,8 @@ export class CertificatesComponent implements OnInit {
   public newCertificate: any = {};
   public permission = undefined;
   public certificateList: any = [];
-  // public certificateList: any = [
-  //   {certificateId: '1', certificateName: 'Dangerous cargo carrying certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-  //   {certificateId: '2', certificateName: 'Cargo ship safety certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-  //   {certificateId: '3', certificateName: 'International oil prevention certificate', file: '/assets/pdf/IMO_Declaration_Form.pdf'},
-  // ];
-
+  public pdf = undefined;
+  public date = undefined;
 
   constructor(private route: ActivatedRoute, private toastr: ToastrService) {
     this.route.params.subscribe(params => {
@@ -30,6 +26,7 @@ export class CertificatesComponent implements OnInit {
         this.selectedCountry = params.country;
         this.shipId = params.shipId;
         this.shipCountry = params.shipCountry;
+        this.date = new Date();
         this.getCertificates();
       } else {
         this.selectedCountry = undefined;
@@ -42,7 +39,7 @@ export class CertificatesComponent implements OnInit {
   }
 
   getCertificates() {
-    axios.get('http://localhost:3000/queryCertificates/' + this.shipId)
+    axios.get('http://localhost:3000/queryCertificates/' + this.shipCountry + '/' + this.shipId)
       .then((response) => {
         // handle success
         if (response.data.status === 'ok') {
@@ -60,48 +57,45 @@ export class CertificatesComponent implements OnInit {
       });
   }
 
-  uploadFile(event) {
+  async uploadFile(event) {
     const files = event.target.files;
     if (files.length > 0) {
       this.newCertificate.data = files[0];
     }
   }
 
-  downloadCertificate() {
-    const pdfBlob = new Blob([this.newCertificate.data], {type: 'application/pdf'});
-    const fileURL = URL.createObjectURL(pdfBlob);
-    window.open(fileURL, '_blank');
-  }
-
-  // deleteCertificate(certificateId) {
-  //   axios.default.delete('https://jsonplaceholder.typicode.com/todos/1')
-  //     .then((response) => {
-  //       // handle success
-  //       this.removeCertificateFromList(certificateId)
-  //       this.toastr.success('Certificate deleted successfully!');
-  //     })
-  //     .catch((error) => {
-  //       // handle error
-  //       this.toastr.error('Unable to delete certificate. Try again.');
-  //       console.log(error);
-  //     });
-  // }
-
-  deleteCertificate(certificateId) {
-    this.removeCertificateFromList(certificateId)
-    this.toastr.success('Certificate deleted successfully!');
-  }
-
-  removeCertificateFromList(certificateId) {
-    const index = this.certificateList.findIndex(certificate => certificate.certificateId === certificateId);
-    if (index !== -1) {
-      this.certificateList.splice(index, 1);
-    }
-
-  }
-
   viewCertificate(fileURL) {
-    window.open(fileURL, '_blank');
+    axios.get('http://localhost:3000/getCertificate/' + fileURL, {
+      responseType: 'arraybuffer',
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    }).then((data) => {
+      this.pdf = data;
+      let file = new Blob([data.data], {type: 'application/pdf'});
+      let fileURL = URL.createObjectURL(file);
+      window.open(fileURL, '_blank');
+    });
+  }
+
+  async uploadCSVFile() {
+    let fileForm = document.getElementById("addFileForm");
+    let data = new FormData(<HTMLFormElement>fileForm);
+    let file = this.newCertificate.data;
+    // for (var pair of data.entries()) {
+    //   console.log(pair[0] + ', ' + pair[1]);
+    // }
+
+    fetch('http://localhost:3000/createCertificate/' + this.shipCountry, {
+      method: 'POST',
+      body: data,
+    }).then((res) => {
+      this.getCertificates();
+      console.log(res);
+    })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
 }
