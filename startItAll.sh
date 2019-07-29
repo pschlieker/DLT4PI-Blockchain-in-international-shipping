@@ -5,7 +5,7 @@ cd blockchain-shipping
 ./bootstrap.sh
 
 cd ~/blockchain-shipping/fabric-network
-./build-network.sh down
+echo -ne '\n' | ./build-network.sh down
 
 cd ~/blockchain-shipping/ipfs
 npm install
@@ -13,7 +13,7 @@ cd ../application/javascript/
 npm install
 
 cd ~/blockchain-shipping/fabric-network
-./build-network.sh up -f docker-compose-e2e.yaml -q
+echo -ne '\n' | ./build-network.sh up -f docker-compose-e2e.yaml -q
 
 cd ~/blockchain-shipping/application/javascript
 ./resetEnrollement.sh
