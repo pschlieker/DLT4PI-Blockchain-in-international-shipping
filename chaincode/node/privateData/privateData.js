@@ -104,8 +104,11 @@ let Chaincode = class {
               new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9148843', new Date(2018, 3, 3), new Date(2020, 3, 3), ''),
               new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9148843', new Date(2019, 3, 3), new Date(2021, 3, 3), ''),
               new PrivateShipCertificate('privShipCert', 'Dangerous Cargo Carrying Certificate', '123456', '9762687', new Date(2018, 4, 4), new Date(2020, 4, 4), ''),
-              new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4), '')
-          ];
+              new PrivateShipCertificate('privShipCert', 'Cargo ship safety certificate', '567890', '9762687', new Date(2019, 4, 4), new Date(2021, 4, 4), ''),
+              new PrivateShipCertificate('privShipCert', 'Cargo Carrying Certificate', '123456', '3827367', new Date(2018, 4, 4), new Date(2020, 4, 4), ''),
+              new PrivateShipCertificate('privShipCert', 'Animal shipping certificate', '567890', '3827367', new Date(2019, 4, 4), new Date(2021, 4, 4), '')
+
+            ];
   
           // === Save PrivateEstoniaShipCertificates to state ===
           try{

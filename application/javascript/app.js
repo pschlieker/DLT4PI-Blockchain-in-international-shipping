@@ -3,6 +3,7 @@
 var express = require("express");
 var bodyParser = require('body-parser')
 var app = express();
+const shell = require('shelljs');
 
 app.use(bodyParser.json({limit: '50mb', extended: true}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
@@ -11,6 +12,7 @@ const ipfs = require('../../ipfs/ipfs-module');
 const shippingClient = require('./fabric-module');
 const path = require('path');
 const ccpPath = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-dma.json');
+const ccpPathEstonia = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-vta.json');
 const user = 'user1';
 const channelName = 'mychannel';
 const multer = require('multer');
@@ -122,6 +124,7 @@ app.post("/createCertificate/:country", upload.single('file'), async (req, res, 
             ccpPath,
             user,
             channelName,
+            'dma',
             country,
             cert.certName,
             cert.certNum,
@@ -206,3 +209,28 @@ app.get("/getCertificate/:certHash", (req, res, next) => {
         res.json({status: 'error', details: err});
     });
 });
+
+/**
+ * @api {get} /moveShipMock/:imo Mock function to move the ship 9762687 into the range of Denmark
+ * @apiName Move Ship Mock
+ * 
+ * @apiParam {String} imo of country to be moved into the range of Denmark
+ *
+ * @apiSuccess {json} {status: 'ok', details: "Moved ship 9762687 into the range of Denmark"}
+ * @apiError {json} {status: 'error', details: err}
+ *
+ **/
+app.get("/moveShipMock/:imo", (req, res, next) => {
+    try{
+        shell.exec('./moveShip.sh in '+req.params.imo);
+        shippingClient.shareShipCertificate(ccpPathEstonia, 'user2', 'mychannel', 'vta', 'Estonia', 'Denmark', req.params.imo).then(function(){
+                res.json({status: 'ok', details: 'Moved ship with imo '+req.params.imo+' into range of Denmark'});
+        });
+
+    }catch(err){
+        res.json({status: 'error', details: err});
+    }
+
+
+});
+

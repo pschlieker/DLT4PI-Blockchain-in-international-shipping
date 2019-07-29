@@ -84,7 +84,8 @@ let Chaincode = class {
         ];
         let estoniaShips = [
             new Ship('ship', '9148843', 'CRYSTALWATER', 'Oil Products Tanker', 'Estonia', 'Muuga Harbour', 1655, 'Charile'),
-            new Ship('ship', '9762687', 'TIIU', 'Passenger/Ro-Ro Cargo Ship', 'Estonia', 'Tallinn Passenger Port', 4987, 'David')
+            new Ship('ship', '9762687', 'TIIU', 'Passenger/Ro-Ro Cargo Ship', 'Estonia', 'Tallinn Passenger Port', 4987, 'David'),
+            new Ship('ship', '3827367', 'TIIU Zoo', 'Animal/Ro-Ro Cargo Ship', 'Estonia', 'Tallinn Passenger Port', 3827, 'George')
         ];
         maritimeAuthorities[0].addShips(denmarkShips);
         maritimeAuthorities[1].addShips(estoniaShips);
