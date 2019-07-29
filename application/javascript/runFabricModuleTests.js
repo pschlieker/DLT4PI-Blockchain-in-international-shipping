@@ -81,7 +81,7 @@ async function testAccessCert() {
     await shippingClient.queryShip(ccpPathDenmark, 'user1', 'mychannel', 'Estonia', '9762687');
 
     console.log('########## Move Estonia ship out of Denmark borders ##########');
-    await shell.exec('../../oracle/moveShip.sh out');
+    await shell.exec('./moveShip.sh out');
 
     console.log('########## Query Estonia ship certificates as Denmark ##########');
     console.log('########## Expected: Not able to access (outside shared PDC) ##########');
@@ -92,7 +92,7 @@ async function testAccessCert() {
     await shippingClient.verifyLocation(ccpPathDenmark, 'user1', 'mychannel', 'Denmark', '9762687');
 
     console.log('########## Move Estonia ship into Denmark borders ##########');
-    await shell.exec('../../oracle/moveShip.sh in');
+    await shell.exec('./moveShip.sh in');
 
     console.log('########## Share the Estonia Ship Certificate to Denmark ##########');
     console.log('########## Expected: true (Ship should be inside Denmark borders) ##########');
@@ -103,7 +103,7 @@ async function testAccessCert() {
     await shippingClient.querySharedCert(ccpPathDenmark, 'user1', 'mychannel', '9762687');
 
     console.log('########## Move Estonia ship out of Denmark borders ##########');
-    await shell.exec('../../oracle/moveShip.sh out');
+    await shell.exec('./moveShip.sh out');
 }
 
 async function main() {
