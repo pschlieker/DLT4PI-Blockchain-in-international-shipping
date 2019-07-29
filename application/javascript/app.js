@@ -105,6 +105,7 @@ app.get("/queryCertificates/:country/:imo", (req, res, next) => {
  *
  **/
 app.post("/createCertificate/:country", upload.single('file'), async (req, res, next) => {
+        let cert = req.body;
         let country = req.params.country;
         let certHash = 'missinghash';
         certHash = await ipfs.uploadFile(req.file.buffer);
