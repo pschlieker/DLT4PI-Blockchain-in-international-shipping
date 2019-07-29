@@ -14,6 +14,12 @@ When ships arrive at the port of foreign countries, they present various certifi
 * `ipfs` Connection module for IPFS
 * `oracle` Data used for mock oracle of ships position
 * `ToopShipping`
+## Architecture
+The network up is build of one channel (`mychannel`), with two maritime organizations: Denmark (Dma) and Estonia (Vta). These two organizations join with two peers each.  
+The channel has four installed chaincodes in total.
+* `generalData`: This chaincode contains general data, that should be accessible to all organizations. These are the registry of maritime authorities, the registry of the ships as well as the oracle to determine a ships position. For any changes all organizations involved need to agree, hence the endorsement policy used is `AND('DmaMSP.peer','VtaMSP.peer')`.
+* `privateDataDma`, `privateDataVta`: The ship certificates are kept in a private data collection by each of the maritime authorities. Each of these are controlled by a separate chaincode with the endorsement policy `"AND ('DmaMSP.peer')"` and `"AND ('VtaMSP.peer')"` respectively. This is due to the fact, that the endorsement policy of a chaincode always needs to be a subset of the collection policy. Otherwise no changes could be made to the collection, because the private data needs to be read to be able to endorse any change.
+* `sharePrivateData`: In order to share a certificate with another maritime authority, the data is copied into a private data collection controlled by both. The endorsement and collection policy is hence `"OR ('DmaMSP.peer','VtaMSP.peer')"`. 
 ## Usage
 ### General Init 
 Clone the repo
