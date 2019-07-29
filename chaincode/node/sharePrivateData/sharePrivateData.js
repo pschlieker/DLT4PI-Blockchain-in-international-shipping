@@ -110,7 +110,7 @@ let Chaincode = class {
     async sharePrivateShipCertificate(stub, args) {
         console.info('============= START : Creating Ship Certificate using Transient Data ===========');
         if (args.length !== 2) {
-              throw new Error('Incorrect number of arguments. Expecting 1 argument (country, imo).'+
+              throw new Error('Incorrect number of arguments. Expecting 2 argument (country, imo).'+
                 'The transient data contains the certificate as JSON '+
                 '{"certName":"NEW International Oil Prevention certificate", "certNum": "901234", "imo": "9166778", "issueDate":"2030-01-01", "expiryDate":"2031-12-31", "certHash":"IPFS_Hash_to_Cert"}');
         }

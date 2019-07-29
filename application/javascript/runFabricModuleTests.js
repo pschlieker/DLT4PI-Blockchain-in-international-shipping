@@ -2,9 +2,10 @@
 
 const shippingClient = require('./fabric-module');
 const path = require('path');
+const shell = require('shelljs');
 const ccpPath = path.resolve(__dirname, '..', '..', 'fabric-network', 'connection-dma.json');
 
-async function testGeneralData(){
+async function testGeneralData() {
     console.log('########## START QUERY TESTS ##########');
     //Retrieve Ships
     console.log('########## Query all ships of Denmark ##########');
@@ -31,52 +32,81 @@ async function testGeneralData(){
     console.log('########## END QUERY TESTS ##########');
 }
 
-async function testPrivateData(){
+async function testPrivateData() {
     console.log('########## START CREATE TESTS ##########');
 
-    // console.log('########## Query certs of Denmark ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+    console.log('########## Query certs of Denmark ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
 
-    // console.log('########## Query certs of Estonia ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+    console.log('########## Query certs of Estonia ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
 
-    // console.log('########## Request certs of Estonia ##########');
-    // await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+    console.log('########## Request certs of Estonia ##########');
+    await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
 
-    // console.log('########## Request certs of Estonia ##########');
-    // await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
+    console.log('########## Request certs of Estonia ##########');
+    await shippingClient.requestShipCert(ccpPath, 'user1', 'mychannel', 'Estonia', '9166778');
 
-    // console.log('########## Create certificate for the ship ##########');
-    // await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'International Oil Prevention certificate', '00000', '1234567', '2030-01-01', '2031-12-31', '0291392131231234test');
+    console.log('########## Create certificate for the ship ##########');
+    await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'International Oil Prevention certificate', '00000', '1234567', '2030-01-01', '2031-12-31', '0291392131231234test');
 
-    // console.log('########## Query certs of the ship ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '1234567');
+    console.log('########## Query certs of the ship ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '1234567');
 
     console.log('########## END CREATE TESTS ##########');
 }
 
-async function testSharePrivateData(){
+async function testSharePrivateData() {
     console.log('########## START ADD CERTIFICATE TESTS ##########');
 
-    // console.log('########## Query the ship ##########');
-    // await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '9166778');
+    console.log('########## Query the ship ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Denmark', '9166778');
 
-    // console.log('########## Query certs of the ship ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+    console.log('########## Query certs of the ship ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
 
-    // console.log('########## Create certificate for the ship ##########');
-    // await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
+    console.log('########## Create certificate for the ship ##########');
+    await shippingClient.createShipCertificate(ccpPath, 'user1', 'mychannel', 'Denmark', 'NEW International Oil Prevention certificate', '00000', '9166778', '2030-01-01', '2031-12-31', 'testhash');
 
-    // console.log('########## Query certs of the ship ##########');
-    // await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
+    console.log('########## Query certs of the ship ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9166778');
 
     console.log('########## END ADD CERTIFICATE TESTS ##########');
 }
 
+async function testAccessCert() {
+    console.log('########## START ACCESS CERTIFICATE TESTS ##########');
+
+    console.log('########## Query the ship ##########');
+    await shippingClient.queryShip(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+
+    console.log('########## Query certs of the ship ##########');
+    console.log('########## Expected: Not able to access ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+
+    console.log('########## Check the location of the ship ##########');
+    console.log('########## Ship should be out of Denmark borders ##########');
+    await shippingClient.verifyLocation(ccpPath, 'user1', 'mychannel', 'Estonia', '9148843');
+
+    console.log('########## Move Estonia ship into Denmark borders ##########');
+    await shell.exec('../../oracle/moveShip.sh in');
+
+    console.log('########## Check the location of the ship ##########');
+    await shippingClient.shareShipCertificate(ccpPath, 'user1', 'mychannel', 'Estonia', 'Denmark', '9148843');
+
+    console.log('########## Query certs of the ship ##########');
+    console.log('########## Expected: Access OK ##########');
+    await shippingClient.queryCert(ccpPath, 'user1', 'mychannel', '9148843');
+
+    console.log('########## Move Estonia ship out of Denmark borders ##########');
+    await shell.exec('../../oracle/moveShip.sh out');
+}
+
 async function main() {
-    await testGeneralData();
+    // await testGeneralData();
     // await testPrivateData();
     // await testSharePrivateData();
+    await testAccessCert();
 }
 
 

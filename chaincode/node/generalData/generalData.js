@@ -107,7 +107,8 @@ let Chaincode = class {
     // Endorsement Policy: AND('Org1.member', ..., 'OrgN.member')
     // ==========================================================================
     async verifyLocation(stub, args) {
-        // e.g. '{"Args":["verifyLocation", "9166778", "Denmark"]}'
+        // Estonia ship going to Denmark
+        // e.g. '{"Args":["verifyLocation", "9148843", "Denmark"]}'
         console.info('============= START : Verify Location ===========');
         if (args.length !== 2) {
             throw new Error('Incorrect number of arguments. Expecting 2 argument (imo, country)');
@@ -116,7 +117,6 @@ let Chaincode = class {
         let country = args[1];
 
         // Get the country's borders
-
         let maAsBytes = await stub.getState(country);
         let maForLog = JSON.parse(maAsBytes);
         maForLog.borders = [];
@@ -126,7 +126,6 @@ let Chaincode = class {
             throw new Error(country + ' does not exist: ');
         }
 
-        // TODO: connect to external api
         let api = `http://oracle/${imo}`;
         const result = await rp(api, { json: true }).catch((err) => {console.error(err);});
         let shipLat = Number(result.entries[0].lat);
