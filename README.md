@@ -1,5 +1,6 @@
 # DLT4PI Blockchain in international shipping: Using DLT to solve problems with document access and sharing in real time
 When ships arrive at the port of foreign countries, they present various certificates. This prototype allows certificates to be shared between different maritime authorities in a secure, tamperproof and privacy preserving way. The prototype makes use of the blockchain framwork Hyperledger Fabric.
+
 The following additional information on the project is available:
 - 2-Pager: https://www.researchgate.net/publication/335740496_DLT4PI_Blockchain_in_international_shipping_Using_DLT_to_solve_problems_with_document_access_and_sharing_in_real_time_2-Pager
 - Poster: https://www.researchgate.net/publication/335715264_DLT4PI_Blockchain_in_international_shipping_Using_DLT_to_solve_problems_with_document_access_and_sharing_in_real_time 
